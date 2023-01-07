@@ -1,4 +1,5 @@
 use bevy::utils::HashMap;
+use strum::IntoEnumIterator;
 use crate::veggie::Veggie;
 
 pub struct Puzzle {
@@ -7,10 +8,37 @@ pub struct Puzzle {
     pub tiles: HashMap<(i8, i8), Tile>,
 }
 
+#[derive(Eq, PartialEq)]
 pub enum Tile {
     Water,
     Rock,
     Scarecrow,
+}
+
+pub fn adjacent<A>(
+    pos: (i8, i8),
+    map: &HashMap<(i8, i8), A>,
+) -> Vec<&A> {
+    let mut adjacent = vec![];
+
+    for dy in [-1, 0, 1] {
+        for dx in [-1, 0, 1] {
+            if dx == 0 && dy == 0 { continue; }
+
+            if let Some(a) = map.get(&(pos.0 + dx, pos.1 + dy)) {
+                adjacent.push(a);
+            }
+        }
+    }
+
+    adjacent
+}
+
+pub fn unhappy_adjacent(veggie: &Veggie) -> Vec<Veggie> {
+    match veggie {
+        Veggie::Garlic | Veggie::Carrot => vec![Veggie::Apple, Veggie::Mint],
+        _ => vec![Veggie::Apple],
+    }
 }
 
 pub fn is_happy(
@@ -19,21 +47,104 @@ pub fn is_happy(
     tiles: &HashMap<(i8, i8), Tile>,
     veggies: &HashMap<(i8, i8), Veggie>,
 ) -> bool {
-    match veggie {
-        Veggie::Strawberry => { true }
-        Veggie::Tomato => { true }
-        Veggie::Apple => {
-            for dy in [-1, 0, 1] {
-                for dx in [-1, 0, 1] {
-                    if dx == 0 && dy == 0 { continue }
-                    if veggies.contains_key(&(pos.0 + dx, pos.1 + dy)) { return false }
-                }
-            }
-            return true
-        }
-        Veggie::Carrot => { true }
-        Veggie::Cherry => { true }
-        Veggie::Garlic => { true }
-        Veggie::Mint => { true }
+    let adjacent_veggies = adjacent(pos, veggies);
+    let adjacent_tiles = adjacent(pos, tiles);
+
+    // Unhappy caused by an adjacent veggie
+    for impossible in unhappy_adjacent(veggie) {
+        if adjacent_veggies.contains(&&impossible) { return false; }
     }
+
+    // Veggie specific conditions
+    match veggie {
+        Veggie::Strawberry => {
+            adjacent_veggies.contains(&&Veggie::Strawberry)
+        }
+        Veggie::Tomato => {
+            adjacent_veggies.contains(&&Veggie::Garlic)
+            || adjacent_veggies.contains(&&Veggie::Carrot)
+        }
+        Veggie::Carrot => {
+            !adjacent_tiles.contains(&&Tile::Rock)
+        }
+        Veggie::Cherry => {
+            // Exactly one adjacent cherry
+            adjacent_veggies.iter().filter(|&&v| v == &Veggie::Cherry).count() == 1
+            // No apples in the line / column
+            && veggies.iter().filter(|(&(x, y), v)| v == &&Veggie::Apple && (x == pos.0 || y == pos.1)).count() == 0
+        }
+        Veggie::Garlic => {
+            !adjacent_tiles.contains(&&Tile::Water)
+        }
+        _ => { true }
+    }
+}
+
+#[test]
+fn test_strawberry() {
+    let tiles = HashMap::from([]);
+    let veggies = HashMap::from([((0, 0), Veggie::Strawberry)]);
+
+    assert!(is_happy(&Veggie::Strawberry, (1, 0), &tiles, &veggies));
+    assert!(!is_happy(&Veggie::Strawberry, (0, 2), &tiles, &veggies));
+}
+
+#[test]
+fn test_carrot() {
+    let tiles = HashMap::from([((0, 0), Tile::Rock)]);
+    let veggies = HashMap::from([]);
+
+    assert!(!is_happy(&Veggie::Carrot, (0, 1), &tiles, &veggies));
+    assert!(is_happy(&Veggie::Carrot, (0, 2), &tiles, &veggies));
+}
+
+#[test]
+fn test_garlic() {
+    let tiles = HashMap::from([((0, 0), Tile::Water)]);
+    let veggies = HashMap::from([]);
+
+    assert!(!is_happy(&Veggie::Garlic, (0, 1), &tiles, &veggies));
+    assert!(is_happy(&Veggie::Garlic, (0, 2), &tiles, &veggies));
+}
+
+#[test]
+fn test_apple() {
+    let tiles = HashMap::from([]);
+    let veggies = HashMap::from([((1, 1), Veggie::Apple)]);
+
+    for veggie in Veggie::iter() {
+        assert!(!is_happy(&veggie, (2, 1), &tiles, &veggies));
+    }
+}
+
+#[test]
+fn test_mint() {
+    let tiles = HashMap::from([]);
+    let veggies = HashMap::from([((1, 1), Veggie::Mint)]);
+
+    for veggie in [Veggie::Carrot, Veggie::Garlic] {
+        assert!(!is_happy(&veggie, (2, 1), &tiles, &veggies));
+        assert!(is_happy(&veggie, (3, 1), &tiles, &veggies));
+    }
+}
+
+#[test]
+fn test_tomato() {
+    let tiles = HashMap::from([]);
+    let veggies = HashMap::from([((0, 0), Veggie::Garlic), ((5, 0), Veggie::Carrot)]);
+
+    assert!(!is_happy(&Veggie::Tomato, (0, 5), &tiles, &veggies));
+    assert!(is_happy(&Veggie::Tomato, (1, 0), &tiles, &veggies));
+    assert!(is_happy(&Veggie::Tomato, (6, 0), &tiles, &veggies));
+}
+
+#[test]
+fn test_cherry() {
+    let tiles = HashMap::from([]);
+    let veggies = HashMap::from([((0, 0), Veggie::Apple), ((1, 1), Veggie::Cherry)]);
+
+    assert!(is_happy(&Veggie::Cherry, (2, 1), &tiles, &veggies));
+    assert!(!is_happy(&Veggie::Cherry, (3, 3), &tiles, &veggies));
+    assert!(!is_happy(&Veggie::Cherry, (1, 0), &tiles, &veggies));
+    assert!(!is_happy(&Veggie::Cherry, (0, 1), &tiles, &veggies));
 }

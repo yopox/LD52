@@ -2,9 +2,11 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
 use rand::random;
+use strum::EnumIter;
 use crate::loading::Textures;
 use crate::util::Colors;
 
+#[derive(Eq, PartialEq, EnumIter)]
 pub enum Veggie {
     Strawberry,
     Tomato,
