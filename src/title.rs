@@ -21,7 +21,7 @@ fn setup(
     mut commands: Commands,
     textures: Res<Textures>,
 ) {
-    let w = (WIDTH / 2. - 40. * 5.) / 2.;
+    let w = (WIDTH / 2. - 40. * 7.) / 2.;
     let h = 196.;
     spawn_veggie(
         &mut commands,
@@ -52,6 +52,18 @@ fn setup(
         &textures,
         Vec3::new(w + 4. * 40., h, util::z::VEGGIE),
         &Veggie::Cherry,
+    );
+    spawn_veggie(
+        &mut commands,
+        &textures,
+        Vec3::new(w + 5. * 40., h, util::z::VEGGIE),
+        &Veggie::Garlic,
+    );
+    spawn_veggie(
+        &mut commands,
+        &textures,
+        Vec3::new(w + 6. * 40., h, util::z::VEGGIE),
+        &Veggie::Mint,
     );
 }
 

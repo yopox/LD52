@@ -5,6 +5,7 @@ pub enum Colors {
     Red,
     Green,
     Orange,
+    Grey,
 }
 
 impl Colors {
@@ -14,6 +15,7 @@ impl Colors {
             Colors::Red => Color::hex("ff004d").unwrap(),
             Colors::Green => Color::hex("008751").unwrap(),
             Colors::Orange => Color::hex("ffa300").unwrap(),
+            Colors::Grey => Color::hex("c2c3c7").unwrap(),
         }
     }
 }

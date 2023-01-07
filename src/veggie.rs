@@ -11,6 +11,8 @@ pub enum Veggie {
     Apple,
     Carrot,
     Cherry,
+    Garlic,
+    Mint,
 }
 
 impl Veggie {
@@ -21,24 +23,28 @@ impl Veggie {
             Veggie::Apple => 2,
             Veggie::Carrot => 3,
             Veggie::Cherry => 4,
+            Veggie::Garlic => 5,
+            Veggie::Mint => 6,
         }
     }
 
     pub fn faces(&self) -> Vec<(f32, f32)> {
         match self {
-            Veggie::Strawberry => vec![(16., 16.)],
+            Veggie::Strawberry | Veggie::Apple => vec![(16., 16.)],
             Veggie::Tomato => vec![(16., 12.)],
-            Veggie::Apple => vec![(16., 16.)],
             Veggie::Carrot => vec![(16., 20.)],
             Veggie::Cherry => vec![(8., 7.), (24., 7.)],
+            Veggie::Garlic => vec![(16., 14.)],
+            Veggie::Mint => vec![(8., 25.)],
         }
     }
 
     pub fn face_color(&self) -> Color {
         match self {
             Veggie::Strawberry | Veggie::Tomato | Veggie::Cherry => Colors::Red.get(),
-            Veggie::Apple => Colors::Green.get(),
+            Veggie::Apple | Veggie::Mint => Colors::Green.get(),
             Veggie::Carrot => Colors::Orange.get(),
+            Veggie::Garlic => Colors::Grey.get()
         }
     }
 }
