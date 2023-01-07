@@ -1,0 +1,29 @@
+[package]
+name = "LD52"
+version = "0.1.0"
+edition = "2021"
+exclude = ["dist", "build", "assets", "credits"]
+
+[features]
+dev = [
+    "bevy/dynamic",
+]
+
+[dependencies]
+bevy = { version = "0.9", default-features = false, features = ["bevy_asset", "bevy_winit", "render", "png", "x11"] }
+bevy_kira_audio = { version = "0.13", features=["wav"] }
+bevy_asset_loader = { version = "0.14.1", default-features = false, features = ["2d"] }
+bevy_common_assets = { version = "0.4", features = ["ron"] }
+bevy_tweening = { version = "0.6.0" }
+bevy_text_mode = { path = "../bevy_text_mode" }
+
+rand = { version = "0.8.5", features = ["alloc"]}
+bevy_pkv = { version = "0.6" }
+serde = { version = "1.0.147" }
+
+# keep the following in sync with Bevy's dependencies
+winit = { version = "0.27", default-features = false }
+image = { version = "0.24", default-features = false }
+
+[build-dependencies]
+embed-resource = "1.4"
