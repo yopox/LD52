@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use bevy::utils::hashbrown::HashMap;
 use crate::{GameState, HEIGHT, util, WIDTH};
 use crate::loading::Textures;
 use crate::puzzle::Puzzle;
@@ -48,6 +49,7 @@ fn setup(
             // (Veggie::Apple, 2),
         ],
         tiles: Default::default(),
+        placed: HashMap::new(),
     });
 
     display_level.send(DisplayLevel);
@@ -62,7 +64,6 @@ fn display_level(
     for _ in ev.iter() {
         if let Some(puzzle) = &puzzle.0 {
             let h = (HEIGHT - puzzle.size.1 as f32 * 40.) / 2.;
-            let band = 32. * 2. + 40.;
             let w = (WIDTH - puzzle.size.0 as f32 * 40.) / 2.;
 
             // Tiles
@@ -123,6 +124,21 @@ fn display_level(
             }
         }
     }
+}
+
+pub fn get_pos_at(cursor_pos: Vec2, puzzle_size: (i8, i8)) -> Option<(i8, i8)> {
+    let (x, y) = (cursor_pos.x / 2., cursor_pos.y / 2.);
+
+    let h = (HEIGHT - puzzle_size.1 as f32 * 40.) / 2.;
+    let w = (WIDTH - puzzle_size.0 as f32 * 40.) / 2.;
+
+    let t_x = (x - w) / 40.;
+    let t_y = (y - h) / 40.;
+
+    if t_x > 0. && t_x < puzzle_size.0 as f32 && t_y > 0. && t_y < puzzle_size.1 as f32 {
+        return Some((t_x as i8, t_y as i8));
+    }
+    return None;
 }
 
 fn update() {}

@@ -6,7 +6,7 @@ use strum::EnumIter;
 use crate::loading::Textures;
 use crate::util::Colors;
 
-#[derive(Eq, PartialEq, EnumIter)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, EnumIter)]
 pub enum Veggie {
     Strawberry,
     Tomato,
@@ -52,7 +52,7 @@ impl Veggie {
 }
 
 #[derive(Component)]
-struct Face;
+pub struct Face;
 
 pub enum Expression {
     Neutral,
@@ -62,7 +62,7 @@ pub enum Expression {
 }
 
 impl Expression {
-    fn index(&self) -> usize {
+    pub(crate) fn index(&self) -> usize {
         match self {
             Expression::Neutral => 0,
             Expression::Surprised => 1,

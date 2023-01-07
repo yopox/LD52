@@ -6,6 +6,7 @@ pub struct Puzzle {
     pub size: (i8, i8),
     pub veggies: Vec<(Veggie, u8)>,
     pub tiles: HashMap<(i8, i8), Tile>,
+    pub placed: HashMap<(i8, i8), Veggie>,
 }
 
 #[derive(Eq, PartialEq)]
