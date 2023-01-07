@@ -5,7 +5,7 @@ use bevy_text_mode::TextModeTextureAtlasSprite;
 use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, util};
-use crate::grid::{CurrentPuzzle, DisplayLevel};
+use crate::grid::{CurrentPuzzle, DisplayLevel, GridVeggie};
 use crate::loading::Textures;
 use crate::veggie::{Expression, Face, spawn_veggie, Veggie};
 
@@ -139,7 +139,8 @@ fn handle_drop(
                                     t.translation.z,
                                     animation_len / 2
                                 )
-                            ));
+                            ))
+                            .insert(GridVeggie(v.0.clone(), tile, (false, false)));
 
                         continue
                     }

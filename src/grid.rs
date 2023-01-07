@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy::utils::hashbrown::HashMap;
-use crate::{GameState, HEIGHT, util, WIDTH};
+use bevy_text_mode::TextModeTextureAtlasSprite;
+use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
 use crate::loading::Textures;
 use crate::puzzle::Puzzle;
-use crate::veggie::Veggie;
+use crate::veggie::{Expression, Face, Veggie};
 
 pub struct GridPlugin;
 
@@ -31,6 +32,9 @@ pub struct CurrentPuzzle(pub Option<Puzzle>);
 
 pub struct DisplayLevel;
 struct DestroyLevel;
+
+#[derive(Component)]
+pub struct GridVeggie(pub Veggie, pub (i8, i8), pub (bool, bool));
 
 fn setup(
     mut puzzle: ResMut<CurrentPuzzle>,
@@ -148,7 +152,29 @@ pub fn get_tile_pos(tile: (i8, i8), puzzle_size: (i8, i8)) -> Vec2 {
     return Vec2::new(w + tile.0 as f32 * 40., h + tile.1 as f32 * 40.);
 }
 
-fn update() {}
+fn update(
+    mut veggies: Query<(&mut GridVeggie, &Children)>,
+    mut faces: Query<&mut TextModeTextureAtlasSprite, With<Face>>,
+    puzzle: Res<CurrentPuzzle>,
+) {
+    if puzzle.0.is_none() { return; }
+    let puzzle = puzzle.0.as_ref().unwrap();
+
+    for (mut veg, c) in veggies.iter_mut() {
+        let (h1, h2) = puzzle::is_happy(&veg.0, veg.1, &puzzle.tiles, &puzzle.placed);
+        veg.2 = (h1, h2);
+
+        if let Some(f1) = c.get(0) {
+            let mut sprite = faces.get_mut(*f1).unwrap();
+            sprite.index = if h1 { Expression::Happy.index() } else { Expression::Sad.index() };
+        }
+
+        if let Some(f2) = c.get(1) {
+            let mut sprite = faces.get_mut(*f2).unwrap();
+            sprite.index = if h2 { Expression::Happy.index() } else { Expression::Sad.index() };
+        }
+    }
+}
 
 fn cleanup(
     mut commands: Commands,
