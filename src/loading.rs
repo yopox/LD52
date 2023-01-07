@@ -13,7 +13,7 @@ impl Plugin for LoadingPlugin {
                 // .with_collection::<Sounds>()
                 .with_collection::<Textures>()
                 // .with_collection::<Data>()
-                .continue_to_state(GameState::Title),
+                .continue_to_state(GameState::Puzzle),
         );
     }
 }
@@ -35,6 +35,13 @@ pub struct Textures {
     #[asset(texture_atlas(tile_size_x = 8., tile_size_y = 8., columns = 4, rows = 1, padding_x = 0., padding_y = 0.))]
     #[asset(path = "faces.png")]
     pub faces: Handle<TextureAtlas>,
+
+    #[asset(texture_atlas(tile_size_x = 8., tile_size_y = 8., columns = 5, rows = 1, padding_x = 0., padding_y = 0.))]
+    #[asset(path = "border.png")]
+    pub border: Handle<TextureAtlas>,
+
+    #[asset(path = "tile.png")]
+    pub tile: Handle<Image>,
 }
 
 #[derive(AssetCollection, Resource)]

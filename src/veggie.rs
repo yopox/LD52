@@ -3,7 +3,6 @@ use bevy::sprite::Anchor;
 use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
 use rand::random;
 use crate::loading::Textures;
-use crate::util;
 use crate::util::Colors;
 
 pub enum Veggie {
@@ -37,9 +36,9 @@ impl Veggie {
 
     pub fn face_color(&self) -> Color {
         match self {
-            Veggie::Strawberry | Veggie::Tomato | Veggie::Cherry => util::Colors::Red.get(),
-            Veggie::Apple => util::Colors::Green.get(),
-            Veggie::Carrot => util::Colors::Orange.get(),
+            Veggie::Strawberry | Veggie::Tomato | Veggie::Cherry => Colors::Red.get(),
+            Veggie::Apple => Colors::Green.get(),
+            Veggie::Carrot => Colors::Orange.get(),
         }
     }
 }
@@ -79,7 +78,7 @@ pub fn spawn_veggie<'w, 's, 'a>(
                             ..Default::default()
                         },
                         texture_atlas: textures.faces.clone(),
-                        transform: Transform::from_xyz(*x, *y, 1.),
+                        transform: Transform::from_xyz(*x, *y, 0.1),
                         ..Default::default()
                     })
                     .insert(Face);

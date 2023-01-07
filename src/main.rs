@@ -4,9 +4,12 @@ mod veggie;
 mod loading;
 mod title;
 mod util;
+mod grid;
+mod puzzle;
 
 use bevy::prelude::*;
 use bevy_text_mode::TextModePlugin;
+use crate::grid::GridPlugin;
 use crate::loading::LoadingPlugin;
 use crate::title::TitlePlugin;
 
@@ -17,6 +20,7 @@ pub const HEIGHT: f32 = 720.;
 enum GameState {
     Loading,
     Title,
+    Puzzle,
 }
 
 fn main() {
@@ -40,6 +44,7 @@ fn main() {
         .add_plugin(TextModePlugin)
         .add_plugin(LoadingPlugin)
         .add_plugin(TitlePlugin)
+        .add_plugin(GridPlugin)
         .add_startup_system(init)
         .run();
 }

@@ -1,9 +1,6 @@
 use bevy::prelude::*;
-use bevy::sprite::Anchor;
-use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
-use crate::{GameState, WIDTH};
+use crate::{GameState, util, WIDTH};
 use crate::loading::Textures;
-use crate::util::Colors;
 use crate::veggie::{spawn_veggie, Veggie};
 
 pub struct TitlePlugin;
@@ -29,31 +26,31 @@ fn setup(
     spawn_veggie(
         &mut commands,
         &textures,
-        Vec3::new(w, h, 1.),
+        Vec3::new(w, h, util::z::VEGGIE),
         &Veggie::Strawberry,
     );
     spawn_veggie(
         &mut commands,
         &textures,
-        Vec3::new(w + 40., h, 1.),
+        Vec3::new(w + 40., h, util::z::VEGGIE),
         &Veggie::Apple,
     );
     spawn_veggie(
         &mut commands,
         &textures,
-        Vec3::new(w + 2. * 40., h, 1.),
+        Vec3::new(w + 2. * 40., h, util::z::VEGGIE),
         &Veggie::Tomato,
     );
     spawn_veggie(
         &mut commands,
         &textures,
-        Vec3::new(w + 3. * 40., h, 1.),
+        Vec3::new(w + 3. * 40., h, util::z::VEGGIE),
         &Veggie::Carrot,
     );
     spawn_veggie(
         &mut commands,
         &textures,
-        Vec3::new(w + 4. * 40., h, 1.),
+        Vec3::new(w + 4. * 40., h, util::z::VEGGIE),
         &Veggie::Cherry,
     );
 }

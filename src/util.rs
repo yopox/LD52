@@ -17,3 +17,8 @@ impl Colors {
         }
     }
 }
+
+pub mod z {
+    pub const TILE: f32 = 1.;
+    pub const VEGGIE: f32 = 2.;
+}
