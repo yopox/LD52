@@ -13,7 +13,7 @@ impl Plugin for LoadingPlugin {
                 // .with_collection::<Sounds>()
                 .with_collection::<Textures>()
                 // .with_collection::<Data>()
-                .continue_to_state(GameState::Title),
+                .continue_to_state(GameState::Puzzle),
         );
     }
 }

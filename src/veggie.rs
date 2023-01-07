@@ -11,7 +11,7 @@ pub enum Veggie {
     Strawberry,
     Tomato,
     Apple,
-    Carrot,
+    Carrot, // Littéralement Clément
     Cherry,
     Garlic,
     Mint,
@@ -54,11 +54,30 @@ impl Veggie {
 #[derive(Component)]
 struct Face;
 
+pub enum Expression {
+    Neutral,
+    Surprised,
+    Happy,
+    Sad,
+}
+
+impl Expression {
+    fn index(&self) -> usize {
+        match self {
+            Expression::Neutral => 0,
+            Expression::Surprised => 1,
+            Expression::Sad => 2,
+            Expression::Happy => 3,
+        }
+    }
+}
+
 pub fn spawn_veggie<'w, 's, 'a>(
     commands: &'a mut Commands<'w, 's>,
     textures: &Res<Textures>,
     position: Vec3,
     veggie: &Veggie,
+    expression: Expression,
 ) -> Entity {
     commands
         .spawn(SpriteSheetBundle {
@@ -81,7 +100,7 @@ pub fn spawn_veggie<'w, 's, 'a>(
                         sprite: TextModeTextureAtlasSprite {
                             bg: veggie.face_color(),
                             fg: Colors::Beige.get(),
-                            index: (random::<f32>() * 4.) as usize,
+                            index: expression.index(),
                             anchor: Anchor::BottomLeft,
                             ..Default::default()
                         },

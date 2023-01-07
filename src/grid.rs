@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use crate::{GameState, HEIGHT, util};
+use crate::{GameState, HEIGHT, util, WIDTH};
 use crate::loading::Textures;
 use crate::puzzle::Puzzle;
 use crate::veggie::Veggie;
@@ -26,9 +26,9 @@ impl Plugin for GridPlugin {
 struct GridUI;
 
 #[derive(Resource)]
-struct CurrentPuzzle(pub Option<Puzzle>);
+pub struct CurrentPuzzle(pub Option<Puzzle>);
 
-struct DisplayLevel;
+pub struct DisplayLevel;
 struct DestroyLevel;
 
 fn setup(
@@ -38,7 +38,15 @@ fn setup(
     // TODO: Load real level
     puzzle.0 = Some(Puzzle {
         size: (4, 3),
-        veggies: vec![(Veggie::Strawberry, 2)],
+        veggies: vec![
+            (Veggie::Strawberry, 2),
+            (Veggie::Carrot, 1),
+            (Veggie::Garlic, 4),
+            (Veggie::Cherry, 2),
+            // (Veggie::Mint, 2),
+            // (Veggie::Tomato, 2),
+            // (Veggie::Apple, 2),
+        ],
         tiles: Default::default(),
     });
 
@@ -53,8 +61,9 @@ fn display_level(
 ) {
     for _ in ev.iter() {
         if let Some(puzzle) = &puzzle.0 {
-            let h = (HEIGHT / 2. - puzzle.size.1 as f32 * 40.) / 2.;
-            let w = 144.;
+            let h = (HEIGHT - puzzle.size.1 as f32 * 40.) / 2.;
+            let band = 32. * 2. + 40.;
+            let w = (WIDTH - puzzle.size.0 as f32 * 40.) / 2.;
 
             // Tiles
             for y in 0..puzzle.size.1 {
