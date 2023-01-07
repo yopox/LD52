@@ -1,4 +1,3 @@
-use bevy::log::info;
 use bevy::utils::HashMap;
 use strum::IntoEnumIterator;
 use crate::veggie::Veggie;

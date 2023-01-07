@@ -16,6 +16,7 @@ use crate::grid::GridPlugin;
 use crate::inventory::InventoryPlugin;
 use crate::loading::LoadingPlugin;
 use crate::title::TitlePlugin;
+use crate::veggie::VeggiePlugin;
 
 // Dimensions in "zoomed" pixels (camera has a 2x factor)
 pub const WIDTH: f32 = 1280. / 2.;
@@ -50,6 +51,7 @@ fn main() {
         .add_plugin(TweeningPlugin)
         .add_system(component_animator_system::<TextureAtlasSprite>)
         .add_system(component_animator_system::<TextModeTextureAtlasSprite>)
+        .add_plugin(VeggiePlugin)
         .add_plugin(LoadingPlugin)
         .add_plugin(TitlePlugin)
         .add_plugin(GridPlugin)

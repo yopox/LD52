@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy::utils::hashbrown::HashMap;
-use bevy_text_mode::TextModeTextureAtlasSprite;
 use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
+use crate::inventory::DraggedVeg;
 use crate::loading::Textures;
 use crate::puzzle::Puzzle;
-use crate::veggie::{Expression, Face, Veggie};
+use crate::veggie::{Expression, UpdateFaces, Veggie};
 
 pub struct GridPlugin;
 
@@ -15,10 +15,12 @@ impl Plugin for GridPlugin {
             .insert_resource(CurrentPuzzle(None))
             .add_event::<DisplayLevel>()
             .add_event::<DestroyLevel>()
+            .add_event::<GridChanged>()
             .add_system_set(SystemSet::on_enter(GameState::Puzzle).with_system(setup))
             .add_system_set(SystemSet::on_update(GameState::Puzzle)
                 .with_system(update)
                 .with_system(display_level)
+                .with_system(handle_click)
             )
             .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
     }
@@ -32,6 +34,8 @@ pub struct CurrentPuzzle(pub Option<Puzzle>);
 
 pub struct DisplayLevel;
 struct DestroyLevel;
+
+pub struct GridChanged;
 
 #[derive(Component)]
 pub struct GridVeggie(pub Veggie, pub (i8, i8), pub (bool, bool));
@@ -153,25 +157,49 @@ pub fn get_tile_pos(tile: (i8, i8), puzzle_size: (i8, i8)) -> Vec2 {
 }
 
 fn update(
-    mut veggies: Query<(&mut GridVeggie, &Children)>,
-    mut faces: Query<&mut TextModeTextureAtlasSprite, With<Face>>,
+    mut changed: EventReader<GridChanged>,
+    mut veggies: Query<(&mut GridVeggie, Entity)>,
+    mut update_faces: EventWriter<UpdateFaces>,
     puzzle: Res<CurrentPuzzle>,
 ) {
-    if puzzle.0.is_none() { return; }
-    let puzzle = puzzle.0.as_ref().unwrap();
+    for _ in changed.iter() {
+        if puzzle.0.is_none() { return; }
+        let puzzle = puzzle.0.as_ref().unwrap();
 
-    for (mut veg, c) in veggies.iter_mut() {
-        let (h1, h2) = puzzle::is_happy(&veg.0, veg.1, &puzzle.tiles, &puzzle.placed);
-        veg.2 = (h1, h2);
-
-        if let Some(f1) = c.get(0) {
-            let mut sprite = faces.get_mut(*f1).unwrap();
-            sprite.index = if h1 { Expression::Happy.index() } else { Expression::Sad.index() };
+        for (mut veg, e) in veggies.iter_mut() {
+            let state = puzzle::is_happy(&veg.0, veg.1, &puzzle.tiles, &puzzle.placed);
+            veg.2 = state;
+            let exp = |b| if b { Expression::Happy } else { Expression::Sad };
+            update_faces.send(UpdateFaces(e, (exp(state.0), exp(state.1))));
         }
+    }
+}
 
-        if let Some(f2) = c.get(1) {
-            let mut sprite = faces.get_mut(*f2).unwrap();
-            sprite.index = if h2 { Expression::Happy.index() } else { Expression::Sad.index() };
+fn handle_click(
+    mut commands: Commands,
+    veggies: Query<(Entity, &GridVeggie, &Transform)>,
+    mouse: Res<Input<MouseButton>>,
+    windows: Res<Windows>,
+    mut puzzle: ResMut<CurrentPuzzle>,
+    mut update_faces: EventWriter<UpdateFaces>,
+) {
+    if puzzle.0.is_none() { return; }
+    let mut puzzle = puzzle.0.as_mut().unwrap();
+
+    if mouse.just_pressed(MouseButton::Left) {
+        let window = windows.get_primary().unwrap();
+        if let Some(pos) = window.cursor_position() {
+            if let Some((e, v, t)) = veggies.iter().filter(|(_, _, t)|
+                (t.translation.x + 20. - pos.x / 2.).abs() < 20.
+                    && (t.translation.y + 20. - pos.y / 2.).abs() < 20.
+            ).nth(0) {
+                commands
+                    .entity(e)
+                    .insert(DraggedVeg(v.0))
+                    .remove::<GridVeggie>();
+                puzzle.placed.remove(&v.1);
+                update_faces.send(UpdateFaces(e, (Expression::Surprised, Expression::Surprised)));
+            }
         }
     }
 }

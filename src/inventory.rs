@@ -5,9 +5,9 @@ use bevy_text_mode::TextModeTextureAtlasSprite;
 use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, util};
-use crate::grid::{CurrentPuzzle, DisplayLevel, GridVeggie};
+use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridVeggie};
 use crate::loading::Textures;
-use crate::veggie::{Expression, Face, spawn_veggie, Veggie};
+use crate::veggie::{Expression, spawn_veggie, UpdateFaces, Veggie};
 
 pub struct InventoryPlugin;
 
@@ -110,8 +110,9 @@ fn handle_drop(
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
     mut query: Query<(Entity, &DraggedVeg, &Transform, &Children)>,
-    mut faces: Query<&mut TextModeTextureAtlasSprite, With<Face>>,
     mut puzzle: ResMut<CurrentPuzzle>,
+    mut update_faces: EventWriter<UpdateFaces>,
+    mut grid_changed: EventWriter<GridChanged>,
 ) {
     if puzzle.0.is_none() { return; }
     let mut puzzle = puzzle.0.as_mut().unwrap();
@@ -142,6 +143,8 @@ fn handle_drop(
                             ))
                             .insert(GridVeggie(v.0.clone(), tile, (false, false)));
 
+                        grid_changed.send(GridChanged);
+
                         continue
                     }
                 }
@@ -162,15 +165,13 @@ fn handle_drop(
 
                 // Else -> disappear animation
                 for face in c {
-                    let mut sprite = faces.get_mut(*face).unwrap();
-                    sprite.index = Expression::Sad.index();
-
                     commands
                         .entity(*face)
                         .insert(Animator::<TextModeTextureAtlasSprite>::new(
                             crate::tween::tween_text_mode_sprite_opacity(animation_len, false)
                         ));
                 }
+                update_faces.send(UpdateFaces(e, (Expression::Sad, Expression::Sad)));
             }
         }
     }
