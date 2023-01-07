@@ -3,8 +3,10 @@
 mod veggie;
 mod loading;
 mod title;
+mod util;
 
 use bevy::prelude::*;
+use bevy_text_mode::TextModePlugin;
 use crate::loading::LoadingPlugin;
 use crate::title::TitlePlugin;
 
@@ -35,6 +37,7 @@ fn main() {
             })
         )
         .add_state(GameState::Loading)
+        .add_plugin(TextModePlugin)
         .add_plugin(LoadingPlugin)
         .add_plugin(TitlePlugin)
         .add_startup_system(init)

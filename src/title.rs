@@ -1,6 +1,9 @@
 use bevy::prelude::*;
+use bevy::sprite::Anchor;
+use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
 use crate::{GameState, WIDTH};
 use crate::loading::Textures;
+use crate::util::Colors;
 use crate::veggie::{spawn_veggie, Veggie};
 
 pub struct TitlePlugin;
