@@ -1,5 +1,8 @@
+use std::ops::Add;
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_text_mode::TextModeTextureAtlasSprite;
+use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, util};
 use crate::grid::{CurrentPuzzle, DisplayLevel};
@@ -106,31 +109,66 @@ fn handle_drop(
     mut commands: Commands,
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
-    mut query: Query<(Entity, &DraggedVeg, &mut Transform, &Children)>,
+    mut query: Query<(Entity, &DraggedVeg, &Transform, &Children)>,
     mut faces: Query<&mut TextModeTextureAtlasSprite, With<Face>>,
     mut puzzle: ResMut<CurrentPuzzle>,
 ) {
     if puzzle.0.is_none() { return; }
     let mut puzzle = puzzle.0.as_mut().unwrap();
 
+    let animation_len = 1000;
+
     if mouse.just_released(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
         if let Some(pos) = window.cursor_position() {
-            for (e, v, mut t, c) in query.iter_mut() {
+            for (e, v, t, c) in query.iter_mut() {
                 commands.entity(e).remove::<DraggedVeg>();
 
                 // Drop on a free tile of the grid -> animate to pos + update count
                 if let Some(tile) = crate::grid::get_pos_at(pos, puzzle.size) {
                     if !puzzle.placed.contains_key(&tile) && !puzzle.tiles.contains_key(&tile) {
                         puzzle.placed.insert(tile, v.0.clone());
+
+                        commands
+                            .entity(e)
+                            .insert(Animator::<Transform>::new(
+                                crate::tween::position_out(
+                                    t.translation.xy(),
+                                    crate::grid::get_tile_pos(tile, puzzle.size)
+                                        .add(Vec2::new(0., 0.)),
+                                    t.translation.z,
+                                    animation_len / 2
+                                )
+                            ));
+
                         continue
                     }
                 }
+
+                commands
+                    .entity(e)
+                    .insert(Animator::<Transform>::new(
+                        crate::tween::position_out(
+                            t.translation.xy(),
+                            t.translation.xy().add(Vec2::new(0., 24.)),
+                            t.translation.z,
+                            3 * animation_len
+                        )
+                    ))
+                    .insert(Animator::<TextureAtlasSprite>::new(
+                        crate::tween::tween_texture_atlas_sprite_opacity(animation_len, false)
+                    ));
 
                 // Else -> disappear animation
                 for face in c {
                     let mut sprite = faces.get_mut(*face).unwrap();
                     sprite.index = Expression::Sad.index();
+
+                    commands
+                        .entity(*face)
+                        .insert(Animator::<TextModeTextureAtlasSprite>::new(
+                            crate::tween::tween_text_mode_sprite_opacity(animation_len, false)
+                        ));
                 }
             }
         }

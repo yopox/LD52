@@ -100,6 +100,7 @@ pub fn spawn_veggie<'w, 's, 'a>(
                         sprite: TextModeTextureAtlasSprite {
                             bg: veggie.face_color(),
                             fg: Colors::Beige.get(),
+                            alpha: 1.,
                             index: expression.index(),
                             anchor: Anchor::BottomLeft,
                             ..Default::default()

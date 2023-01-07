@@ -141,6 +141,13 @@ pub fn get_pos_at(cursor_pos: Vec2, puzzle_size: (i8, i8)) -> Option<(i8, i8)> {
     return None;
 }
 
+pub fn get_tile_pos(tile: (i8, i8), puzzle_size: (i8, i8)) -> Vec2 {
+    let h = (HEIGHT - puzzle_size.1 as f32 * 40.) / 2.;
+    let w = (WIDTH - puzzle_size.0 as f32 * 40.) / 2.;
+
+    return Vec2::new(w + tile.0 as f32 * 40., h + tile.1 as f32 * 40.);
+}
+
 fn update() {}
 
 fn cleanup(
