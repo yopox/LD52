@@ -10,6 +10,7 @@ mod inventory;
 mod tween;
 mod text;
 mod editor;
+mod data;
 
 use bevy::prelude::*;
 use bevy_text_mode::{TextModePlugin, TextModeTextureAtlasSprite};

@@ -1,10 +1,10 @@
-use bevy::prelude::Component;
 use bevy::utils::HashMap;
 use strum::{EnumIter, IntoEnumIterator};
 use crate::editor::InEditor;
 use crate::veggie::Veggie;
 
 pub struct Puzzle {
+    pub author: String,
     pub size: (i8, i8),
     pub veggies: HashMap<Veggie, u8>,
     pub tiles: HashMap<(i8, i8), Tile>,
@@ -21,6 +21,18 @@ impl Puzzle {
             return *count as usize - self.placed.iter().filter(|(_, v)| **v == *veggie).count();
         }
         return 0;
+    }
+
+    pub fn is_valid(&self) -> Result<(), String> {
+        let max_size = self.size.0 <= MAX_W && self.size.1 <= MAX_H;
+        if !max_size { return Err("The grid is too large!".to_string()); }
+        let min_size = self.size.0 >= 1 && self.size.1 >= 1;
+        if !min_size { return Err("The grid is too small!".to_string()); }
+        let happy = self.placed.iter().all(|((x, y), v)| is_happy(v, (*x, *y), &self.tiles, &self.placed) == (true, true));
+        if !happy { return Err("The veggies should be happy!".to_string()); }
+        let one_veg = self.placed.len() > 0;
+        if !one_veg { return Err("The puzzle is empty!".to_string()); }
+        return Ok(());
     }
 }
 

@@ -48,21 +48,10 @@ fn setup(
 ) {
     // TODO: Load real level
     puzzle.0 = Some(Puzzle {
-        size: (3, 3),
-        veggies: HashMap::from([
-            (Veggie::Strawberry, 2),
-            (Veggie::Carrot, 1),
-            (Veggie::Garlic, 4),
-            (Veggie::Cherry, 2),
-            (Veggie::Mint, 2),
-            (Veggie::Tomato, 2),
-            (Veggie::Apple, 2),
-        ]),
-        tiles: HashMap::from([
-            // ((1, 1), Tile::Rock),
-            // ((2, 2), Tile::Water),
-            // ((3, 2), Tile::Water),
-        ]),
+        author: "yopox".to_string(),
+        size: (5, 3),
+        veggies: HashMap::new(),
+        tiles: HashMap::new(),
         placed: HashMap::new(),
     });
 

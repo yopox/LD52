@@ -1,3 +1,4 @@
+use std::ops::Add;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
@@ -109,6 +110,9 @@ fn update_text(
 #[derive(Component, Eq, PartialEq, Clone)]
 pub enum TextButtonId {
     ExpandShrink(bool, bool),
+    Export,
+    Import,
+    Exit,
 }
 
 pub struct ButtonClick(pub TextButtonId);
@@ -123,7 +127,7 @@ fn handle_click(
         let window = windows.get_primary().unwrap();
         if let Some(pos) = window.cursor_position() {
             if let Some((_, _, id)) = buttons.iter().filter(|(text, t, _)|
-                collides(t.translation, text.0.get(0).unwrap().len() as f32 * 8., 8., pos)
+                collides(t.translation.add(Vec3::new(0., (text.0.len() - 1) as f32 * 8. * -1., 0.)), text.0.get(0).unwrap().len() as f32 * 8., text.0.len() as f32 * 8., pos)
             ).nth(0) {
                 ev.send(ButtonClick(id.clone()));
             }

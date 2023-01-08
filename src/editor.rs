@@ -1,10 +1,12 @@
 use std::ops::Add;
+use arboard::Clipboard;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
+use crate::data::{Decoder, Encoder};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridTile, PreviousPos};
 use crate::loading::Textures;
 use crate::puzzle::Tile;
@@ -22,7 +24,7 @@ impl Plugin for EditorPlugin {
                 .with_system(handle_click)
                 .with_system(handle_drop)
                 .with_system(handle_click_on_grid)
-                .with_system(click_on_button)
+                .with_system(click_on_button.after("logic"))
             )
             .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
     }
@@ -75,16 +77,19 @@ fn display_editor(
                 .insert(EditorTile(tile.clone()));
         }
 
-        // Expand / Shrink buttons
+        // Buttons
         let grid_w = puzzle.size.0 as f32 * 40.;
         let grid_x = (WIDTH - grid_w) / 2.;
         let grid_h = puzzle.size.1 as f32 * 40.;
         let grid_y = (HEIGHT - grid_h) / 2.;
-        for (x, y, text, bg, fg, (expand, rows)) in [
-            (grid_x, grid_y + grid_h + 8., "+", Colors::Green, Colors::Beige, (true, true)),
-            (grid_x + 12., grid_y + grid_h + 8., "-", Colors::Red, Colors::Beige, (false, true)),
-            (grid_x + grid_w + 8., grid_y + grid_h - 8., "+", Colors::Green, Colors::Beige, (true, false)),
-            (grid_x + grid_w + 8., grid_y + grid_h - 20., "-", Colors::Red, Colors::Beige, (false, false)),
+        for (x, y, text, bg, fg, button) in [
+            (grid_x, grid_y + grid_h + 8., "+", Colors::Green, Colors::Beige, TextButtonId::ExpandShrink(true, true)),
+            (grid_x + 12., grid_y + grid_h + 8., "-", Colors::Red, Colors::Beige, TextButtonId::ExpandShrink(false, true)),
+            (grid_x + grid_w + 8., grid_y + grid_h - 8., "+", Colors::Green, Colors::Beige, TextButtonId::ExpandShrink(true, false)),
+            (grid_x + grid_w + 8., grid_y + grid_h - 20., "-", Colors::Red, Colors::Beige, TextButtonId::ExpandShrink(false, false)),
+            (WIDTH - 88., 80., "save to -\nclipboard", Colors::DarkRed, Colors::Beige, TextButtonId::Export),
+            (WIDTH - 88., 80. - 24., "load from\nclipboard", Colors::DarkRed, Colors::Beige, TextButtonId::Import),
+            (WIDTH - 88., 80. - 48., "exit ----", Colors::DarkRed, Colors::Beige, TextButtonId::Exit),
         ] {
             let id = spawn_text(
                 &mut commands,
@@ -97,9 +102,11 @@ fn display_editor(
 
             commands
                 .entity(id)
-                .insert(TextButtonId::ExpandShrink(expand, rows))
+                .insert(button)
                 .insert(EditorUI);
         }
+
+
 
         break;
     }
@@ -249,12 +256,13 @@ fn handle_click_on_grid(
 }
 
 fn click_on_button(
+    mut commands: Commands,
     mut clicks: EventReader<ButtonClick>,
-    mut puzzle: ResMut<CurrentPuzzle>,
+    mut current_puzzle: ResMut<CurrentPuzzle>,
     mut display_level: EventWriter<DisplayLevel>,
 ) {
-    if puzzle.0.is_none() { return; }
-    let mut puzzle = puzzle.0.as_mut().unwrap();
+    if current_puzzle.0.is_none() { return; }
+    let mut puzzle = current_puzzle.0.as_mut().unwrap();
 
     for click in clicks.iter() {
         match click.0 {
@@ -287,6 +295,25 @@ fn click_on_button(
                 // Reposition stuff
                 display_level.send(DisplayLevel);
             }
+            TextButtonId::Export => {
+                if let Some(text) = Encoder::encode_puzzle(&puzzle) {
+                    if let Ok(mut clipboard) = Clipboard::new() {
+                        let _ = clipboard.set_text(text);
+                    }
+                }
+            }
+
+            TextButtonId::Import => {
+                if let Ok(mut clipboard) = Clipboard::new() {
+                    if let Ok(text) = clipboard.get_text() {
+                        if let Some(decoded) = Decoder::decode_puzzle(text) {
+                            commands.insert_resource(CurrentPuzzle(Some(decoded)));
+                            display_level.send(DisplayLevel);
+                        }
+                    }
+                }
+            }
+            _ => {}
         }
     }
 }
