@@ -34,6 +34,7 @@ impl Colors {
 
 pub mod z {
     pub const TILE: f32 = 1.;
+    pub const TILE_ABOVE: f32 = 1.5;
     pub const VEGGIE: f32 = 2.;
     pub const VEG_UI: f32 = 3.;
     pub const COUNT_TEXT: f32 = 3.5;

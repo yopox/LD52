@@ -4,7 +4,7 @@ use bevy::utils::hashbrown::HashMap;
 use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
 use crate::inventory::DraggedVeg;
 use crate::loading::Textures;
-use crate::puzzle::Puzzle;
+use crate::puzzle::{Puzzle, Tile};
 use crate::veggie::{Expression, UpdateFaces, Veggie};
 
 pub struct GridPlugin;
@@ -56,7 +56,11 @@ fn setup(
             (Veggie::Tomato, 2),
             (Veggie::Apple, 2),
         ]),
-        tiles: Default::default(),
+        tiles: HashMap::from([
+            ((1, 1), Tile::Rock),
+            ((2, 2), Tile::Water),
+            ((3, 2), Tile::Water),
+        ]),
         placed: HashMap::new(),
     });
 
@@ -77,6 +81,9 @@ fn display_level(
             // Tiles
             for y in 0..puzzle.size.1 {
                 for x in 0..puzzle.size.0 {
+                    let tile_x = w + x as f32 * 40.;
+                    let tile_y = h + y as f32 * 40.;
+
                     commands
                         .spawn(SpriteSheetBundle {
                             sprite: TextureAtlasSprite {
@@ -84,11 +91,26 @@ fn display_level(
                                 anchor: Anchor::BottomLeft,
                                 ..Default::default()
                             },
-                            transform: Transform::from_xyz(w + x as f32 * 40., h + y as f32 * 40., util::z::TILE),
+                            transform: Transform::from_xyz(tile_x, tile_y, util::z::TILE),
                             texture_atlas: textures.tile.clone(),
                             ..Default::default()
                         })
                         .insert(GridUI);
+
+                    if let Some(tile) = puzzle.tiles.get(&(x, y)) {
+                        commands
+                            .spawn(SpriteSheetBundle {
+                                sprite: TextureAtlasSprite {
+                                    index: tile.index(),
+                                    anchor: Anchor::BottomLeft,
+                                    ..Default::default()
+                                },
+                                transform: Transform::from_xyz(tile_x, tile_y, util::z::TILE_ABOVE),
+                                texture_atlas: textures.tile.clone(),
+                                ..Default::default()
+                            })
+                            .insert(GridUI);
+                    }
                 }
             }
 

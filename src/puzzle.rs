@@ -22,7 +22,15 @@ impl Puzzle {
 pub enum Tile {
     Water,
     Rock,
-    Scarecrow,
+}
+
+impl Tile {
+    pub fn index(&self) -> usize {
+        match self {
+            Tile::Water => 2,
+            Tile::Rock => 3,
+        }
+    }
 }
 
 pub fn adjacent<A>(
