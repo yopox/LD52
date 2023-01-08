@@ -10,6 +10,9 @@ pub struct Puzzle {
     pub placed: HashMap<(i8, i8), Veggie>,
 }
 
+pub const MAX_W: i8 = 10;
+pub const MAX_H: i8 = 7;
+
 impl Puzzle {
     pub fn remaining_veggie(&self, veggie: &Veggie) -> usize {
         if let Some(count) = self.veggies.get(veggie) {

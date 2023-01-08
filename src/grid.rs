@@ -5,7 +5,7 @@ use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
 use crate::inventory::DraggedVeg;
 use crate::loading::Textures;
 use crate::puzzle::{Puzzle, Tile};
-use crate::veggie::{Expression, UpdateFaces, Veggie};
+use crate::veggie::{Expression, spawn_veggie, UpdateFaces, Veggie};
 
 pub struct GridPlugin;
 
@@ -16,10 +16,12 @@ impl Plugin for GridPlugin {
             .add_event::<DisplayLevel>()
             .add_event::<DestroyLevel>()
             .add_event::<GridChanged>()
-            .add_system_set(SystemSet::on_enter(GameState::Puzzle).with_system(setup))
+            .add_system_set(SystemSet::on_enter(GameState::Puzzle)
+                .with_system(setup)
+            )
             .add_system_set(SystemSet::on_update(GameState::Puzzle)
                 .with_system(update.before("logic"))
-                .with_system(display_level)
+                .with_system(display_level.label("logic"))
                 .with_system(handle_click.label("logic"))
             )
             .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
@@ -27,7 +29,7 @@ impl Plugin for GridPlugin {
 }
 
 #[derive(Component)]
-struct GridUI;
+pub struct GridUI;
 
 #[derive(Resource)]
 pub struct CurrentPuzzle(pub Option<Puzzle>);
@@ -75,8 +77,13 @@ fn display_level(
     textures: Res<Textures>,
     mut ev: EventReader<DisplayLevel>,
     puzzle: Res<CurrentPuzzle>,
+    entities: Query<Entity, With<GridUI>>,
+    mut grid_changed: EventWriter<GridChanged>,
 ) {
     for _ in ev.iter() {
+        // "Reset grid"
+        entities.iter().for_each(|e| commands.entity(e).despawn_recursive());
+
         if let Some(puzzle) = &puzzle.0 {
             let h = (HEIGHT - puzzle.size.1 as f32 * 40.) / 2.;
             let w = (WIDTH - puzzle.size.0 as f32 * 40.) / 2.;
@@ -113,6 +120,20 @@ fn display_level(
                                 ..Default::default()
                             })
                             .insert(GridTile(tile.clone(), (x, y)))
+                            .insert(GridUI);
+                    }
+
+                    if let Some(veggie) = puzzle.placed.get(&(x, y)) {
+                        let id = spawn_veggie(
+                            &mut commands,
+                            &textures,
+                            Vec3::new(tile_x, tile_y, util::z::VEGGIE),
+                            veggie,
+                            Expression::Neutral,
+                        );
+                        commands
+                            .entity(id)
+                            .insert(GridVeggie(veggie.clone(), (x, y), (false, false)))
                             .insert(GridUI);
                     }
                 }
@@ -157,6 +178,8 @@ fn display_level(
                     })
                     .insert(GridUI);
             }
+
+            grid_changed.send(GridChanged);
         }
     }
 }

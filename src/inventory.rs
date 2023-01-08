@@ -6,7 +6,7 @@ use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, util};
 use crate::editor::DraggedTile;
-use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridVeggie, PreviousPos};
+use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridUI, GridVeggie, PreviousPos};
 use crate::loading::Textures;
 use crate::text::{ChangeText, spawn_text};
 use crate::util::Colors;
@@ -171,7 +171,9 @@ fn handle_drop(
         let window = windows.get_primary().unwrap();
         if let Some(pos) = window.cursor_position() {
             for (e, v, t, c, prev) in query.iter() {
-                commands.entity(e).remove::<DraggedVeg>();
+                commands.entity(e)
+                    .remove::<DraggedVeg>()
+                    .insert(GridUI);
 
                 // Drop on a free tile of the grid -> animate to pos + update count
                 if let Some(tile) = crate::grid::get_pos_at(pos, puzzle.size) {

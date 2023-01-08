@@ -4,10 +4,12 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
-use crate::{GameState, HEIGHT, util, WIDTH};
-use crate::grid::{CurrentPuzzle, GridChanged, GridTile, PreviousPos};
+use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
+use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridTile, PreviousPos};
 use crate::loading::Textures;
 use crate::puzzle::Tile;
+use crate::text::spawn_text;
+use crate::util::{collides, Colors};
 
 pub struct EditorPlugin;
 
@@ -15,11 +17,12 @@ impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
         app
             .insert_resource(InEditor(true))
-            .add_system_set(SystemSet::on_enter(GameState::Puzzle).with_system(setup))
             .add_system_set(SystemSet::on_update(GameState::Puzzle)
+                .with_system(display_editor)
                 .with_system(handle_click)
                 .with_system(handle_drop)
                 .with_system(handle_click_on_grid)
+                .with_system(click_on_button)
             )
             .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
     }
@@ -34,33 +37,73 @@ struct EditorUI;
 #[derive(Component)]
 struct EditorTile(Tile);
 
-fn setup(
+fn display_editor(
     mut commands: Commands,
     textures: Res<Textures>,
     in_editor: Res<InEditor>,
+    puzzle: Res<CurrentPuzzle>,
+    mut display_event: EventReader<DisplayLevel>,
+    entities: Query<Entity, With<EditorUI>>,
 ) {
     if !in_editor.0 { return; }
 
-    let tiles = Tile::iter().collect::<Vec<Tile>>();
+    if puzzle.0.is_none() { return; }
+    let puzzle = puzzle.0.as_ref().unwrap();
 
-    let h = (HEIGHT - tiles.len() as f32 * 48.) / 2.;
-    let w = WIDTH - 32. - 40.;
+    for _ in display_event.iter() {
+        entities.iter().for_each(|e| commands.entity(e).despawn_recursive());
 
-    for (i, tile) in Tile::iter().enumerate() {
-        commands
-            .spawn(SpriteSheetBundle {
-                sprite: TextureAtlasSprite {
-                    index: tile.index(),
-                    anchor: Anchor::BottomLeft,
+        // Tiles on the right
+        let tiles = Tile::iter().collect::<Vec<Tile>>();
+
+        let h = (HEIGHT - tiles.len() as f32 * 48.) / 2.;
+        let w = WIDTH - 32. - 40.;
+
+        for (i, tile) in Tile::iter().enumerate() {
+            commands
+                .spawn(SpriteSheetBundle {
+                    sprite: TextureAtlasSprite {
+                        index: tile.index(),
+                        anchor: Anchor::BottomLeft,
+                        ..Default::default()
+                    },
+                    texture_atlas: textures.tile.clone(),
+                    transform: Transform::from_xyz(w, h + 48. * i as f32 + 4., util::z::VEG_UI),
                     ..Default::default()
-                },
-                texture_atlas: textures.tile.clone(),
-                transform: Transform::from_xyz(w, h + 48. * i as f32 + 4., util::z::VEG_UI),
-                ..Default::default()
-            })
-            .insert(EditorUI)
-            .insert(EditorTile(tile.clone()));
+                })
+                .insert(EditorUI)
+                .insert(EditorTile(tile.clone()));
+        }
+
+        // Expand / Shrink buttons
+        let grid_w = puzzle.size.0 as f32 * 40.;
+        let grid_x = (WIDTH - grid_w) / 2.;
+        let grid_h = puzzle.size.1 as f32 * 40.;
+        let grid_y = (HEIGHT - grid_h) / 2.;
+        for (x, y, text, bg, fg, (expand, rows)) in [
+            (grid_x, grid_y + grid_h + 8., "+", Colors::Green, Colors::Beige, (true, true)),
+            (grid_x + 12., grid_y + grid_h + 8., "-", Colors::Red, Colors::Beige, (false, true)),
+            (grid_x + grid_w + 8., grid_y + grid_h - 8., "+", Colors::Green, Colors::Beige, (true, false)),
+            (grid_x + grid_w + 8., grid_y + grid_h - 20., "-", Colors::Red, Colors::Beige, (false, false)),
+        ] {
+            let id = spawn_text(
+                &mut commands,
+                &textures,
+                Vec3::new(x, y, util::z::VEG_UI),
+                text,
+                bg.get(),
+                fg.get(),
+            );
+
+            commands
+                .entity(id)
+                .insert(ExpandShrinkButton { expand, rows })
+                .insert(EditorUI);
+        }
+
+        break;
     }
+    display_event.clear();
 }
 
 #[derive(Component)]
@@ -174,15 +217,6 @@ fn handle_drop(
     }
 }
 
-fn cleanup(
-    mut commands: Commands,
-    query: Query<Entity, With<EditorUI>>,
-) {
-    for e in query.iter() {
-        commands.entity(e).despawn_recursive();
-    }
-}
-
 fn handle_click_on_grid(
     mut commands: Commands,
     mut tiles: Query<(Entity, &GridTile, &mut Transform)>,
@@ -211,5 +245,70 @@ fn handle_click_on_grid(
                 grid_changed.send(GridChanged);
             }
         }
+    }
+}
+
+#[derive(Component)]
+struct ExpandShrinkButton {
+    expand: bool,
+    rows: bool,
+}
+
+fn click_on_button(
+    mut buttons: Query<(&ExpandShrinkButton, &mut Transform)>,
+    mouse: Res<Input<MouseButton>>,
+    windows: Res<Windows>,
+    mut puzzle: ResMut<CurrentPuzzle>,
+    mut display_level: EventWriter<DisplayLevel>,
+) {
+    if puzzle.0.is_none() { return; }
+    let mut puzzle = puzzle.0.as_mut().unwrap();
+
+    if mouse.just_pressed(MouseButton::Left) {
+        let window = windows.get_primary().unwrap();
+        if let Some(pos) = window.cursor_position() {
+            if let Some((e, _)) = buttons.iter().filter(|(_, t)|
+                collides(t.translation, 8., 8., pos)
+            ).nth(0) {
+                // Expand at max size or shrink at min size -> impossible
+                if e.expand && (e.rows && puzzle.size.1 >= puzzle::MAX_H || !e.rows && puzzle.size.0 >= puzzle::MAX_W)
+                || !e.expand && (e.rows && puzzle.size.1 == 1 || !e.rows && puzzle.size.0 == 1) { return; }
+
+                // Update puzzle dimensions
+                if e.expand {
+                    if e.rows { puzzle.size.1 += 1; } else { puzzle.size.0 += 1; }
+                } else {
+                    if e.rows {
+                        puzzle.size.1 -= 1;
+                        // Remove placed veggies / tiles on the removed row
+                        (0..puzzle.size.0).for_each(|x| {
+                            puzzle.tiles.remove(&(x, puzzle.size.1));
+                            puzzle.placed.remove(&(x, puzzle.size.1));
+                        })
+                    } else {
+                        puzzle.size.0 -= 1;
+                        // Remove placed veggies / tiles on the removed line
+                        (0..puzzle.size.1).for_each(|y| {
+                            puzzle.tiles.remove(&(puzzle.size.0, y));
+                            puzzle.placed.remove(&(puzzle.size.0, y));
+                        })
+                    }
+                }
+
+                // Reposition stuff
+                display_level.send(DisplayLevel);
+
+
+            }
+        }
+    }
+}
+
+fn cleanup(
+    mut commands: Commands,
+    query: Query<Entity, With<EditorUI>>,
+) {
+    for e in query.iter() {
+        commands.entity(e).despawn_recursive();
     }
 }
