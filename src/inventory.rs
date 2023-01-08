@@ -46,10 +46,15 @@ fn display(
 ) {
     for _ in event.iter() {
         if let Some(puzzle) = &puzzle.0 {
-            let h = (HEIGHT - puzzle.veggies.len() as f32 * 48.) / 2.;
-            let w = 32.;
+            let all_veggies = if in_editor.0 {
+                Veggie::iter().map(|v| (v, 99)).collect::<Vec<(Veggie, u8)>>()
+            } else {
+                puzzle.veggies.iter().map(|(v, c)| (*v, *c)).collect::<Vec<(Veggie, u8)>>()
+            };
 
-            for (i, (veg, count)) in puzzle.veggies.iter().enumerate() {
+            let h = (HEIGHT - all_veggies.len() as f32 * 48.) / 2.;
+            let w = 32.;
+            for (i, (veg, count)) in all_veggies.iter().enumerate() {
                 let veg_e = spawn_veggie(
                     &mut commands,
                     &textures,
