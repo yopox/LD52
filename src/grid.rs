@@ -78,13 +78,14 @@ fn display_level(
             for y in 0..puzzle.size.1 {
                 for x in 0..puzzle.size.0 {
                     commands
-                        .spawn(SpriteBundle {
-                            sprite: Sprite {
+                        .spawn(SpriteSheetBundle {
+                            sprite: TextureAtlasSprite {
+                                index: ((x + y) % 2) as usize,
                                 anchor: Anchor::BottomLeft,
                                 ..Default::default()
                             },
                             transform: Transform::from_xyz(w + x as f32 * 40., h + y as f32 * 40., util::z::TILE),
-                            texture: textures.tile.clone(),
+                            texture_atlas: textures.tile.clone(),
                             ..Default::default()
                         })
                         .insert(GridUI);

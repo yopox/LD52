@@ -1,6 +1,7 @@
 use bevy::prelude::Color;
 
 pub enum Colors {
+    // PICO-8 palette
     Black,
     Navy,
     Beige,
@@ -8,6 +9,9 @@ pub enum Colors {
     Green,
     Orange,
     Grey,
+    // Custom colors
+    DarkBrown,
+    Brown,
 }
 
 impl Colors {
@@ -20,6 +24,8 @@ impl Colors {
             Colors::Green => Color::hex("008751").unwrap(),
             Colors::Orange => Color::hex("ffa300").unwrap(),
             Colors::Grey => Color::hex("c2c3c7").unwrap(),
+            Colors::DarkBrown => Color::hex("441506").unwrap(),
+            Colors::Brown => Color::hex("662916").unwrap(),
         }
     }
 }

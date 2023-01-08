@@ -40,8 +40,9 @@ pub struct Textures {
     #[asset(path = "border.png")]
     pub border: Handle<TextureAtlas>,
 
+    #[asset(texture_atlas(tile_size_x = 40., tile_size_y = 40., columns = 2, rows = 1, padding_x = 0., padding_y = 0.))]
     #[asset(path = "tile.png")]
-    pub tile: Handle<Image>,
+    pub tile: Handle<TextureAtlas>,
 }
 
 #[derive(AssetCollection, Resource)]
