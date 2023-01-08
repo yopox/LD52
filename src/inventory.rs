@@ -5,9 +5,9 @@ use bevy_text_mode::TextModeTextureAtlasSprite;
 use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, util};
+use crate::editor::DraggedTile;
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridVeggie, PreviousPos};
 use crate::loading::Textures;
-use crate::puzzle::Puzzle;
 use crate::text::{ChangeText, spawn_text};
 use crate::util::Colors;
 use crate::veggie::{Expression, spawn_veggie, UpdateFaces, Veggie};
@@ -141,7 +141,7 @@ fn handle_click(
 }
 
 fn update_dragged(
-    mut query: Query<&mut Transform, With<DraggedVeg>>,
+    mut query: Query<&mut Transform, Or<(With<DraggedVeg>, With<DraggedTile>)>>,
     windows: Res<Windows>,
 ) {
     let window = windows.get_primary().unwrap();
@@ -192,8 +192,7 @@ fn handle_drop(
                             .insert(Animator::<Transform>::new(
                                 crate::tween::position_out(
                                     t.translation.xy(),
-                                    crate::grid::get_tile_pos(tile, puzzle.size)
-                                        .add(Vec2::new(0., 0.)),
+                                    crate::grid::get_tile_pos(tile, puzzle.size),
                                     util::z::VEGGIE,
                                     animation_len / 2
                                 )
@@ -206,6 +205,7 @@ fn handle_drop(
                     }
                 }
 
+                // Else -> disappear animation
                 commands
                     .entity(e)
                     .insert(Animator::<Transform>::new(
@@ -220,7 +220,6 @@ fn handle_drop(
                         crate::tween::tween_texture_atlas_sprite_opacity(animation_len, false)
                     ));
 
-                // Else -> disappear animation
                 for face in c {
                     commands
                         .entity(*face)

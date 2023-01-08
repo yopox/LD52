@@ -67,6 +67,9 @@ fn setup(
     display_level.send(DisplayLevel);
 }
 
+#[derive(Component)]
+pub struct GridTile(pub Tile, pub (i8, i8));
+
 fn display_level(
     mut commands: Commands,
     textures: Res<Textures>,
@@ -109,6 +112,7 @@ fn display_level(
                                 texture_atlas: textures.tile.clone(),
                                 ..Default::default()
                             })
+                            .insert(GridTile(tile.clone(), (x, y)))
                             .insert(GridUI);
                     }
                 }

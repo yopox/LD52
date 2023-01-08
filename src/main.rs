@@ -9,10 +9,12 @@ mod puzzle;
 mod inventory;
 mod tween;
 mod text;
+mod editor;
 
 use bevy::prelude::*;
 use bevy_text_mode::{TextModePlugin, TextModeTextureAtlasSprite};
 use bevy_tweening::{component_animator_system, TweeningPlugin};
+use crate::editor::EditorPlugin;
 use crate::grid::GridPlugin;
 use crate::inventory::InventoryPlugin;
 use crate::loading::LoadingPlugin;
@@ -59,6 +61,7 @@ fn main() {
         .add_plugin(LoadingPlugin)
         .add_plugin(TitlePlugin)
         .add_plugin(GridPlugin)
+        .add_plugin(EditorPlugin)
         .add_plugin(InventoryPlugin)
         .add_startup_system(init)
         .run();

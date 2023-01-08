@@ -1,5 +1,6 @@
+use bevy::prelude::Component;
 use bevy::utils::HashMap;
-use strum::IntoEnumIterator;
+use strum::{EnumIter, IntoEnumIterator};
 use crate::veggie::Veggie;
 
 pub struct Puzzle {
@@ -18,7 +19,7 @@ impl Puzzle {
     }
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone, EnumIter)]
 pub enum Tile {
     Water,
     Rock,
