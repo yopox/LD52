@@ -1,6 +1,7 @@
 use bevy::prelude::Component;
 use bevy::utils::HashMap;
 use strum::{EnumIter, IntoEnumIterator};
+use crate::editor::InEditor;
 use crate::veggie::Veggie;
 
 pub struct Puzzle {
@@ -14,7 +15,8 @@ pub const MAX_W: i8 = 10;
 pub const MAX_H: i8 = 7;
 
 impl Puzzle {
-    pub fn remaining_veggie(&self, veggie: &Veggie) -> usize {
+    pub fn remaining_veggie(&self, veggie: &Veggie, in_editor: &InEditor) -> usize {
+        if in_editor.0 { return 99; }
         if let Some(count) = self.veggies.get(veggie) {
             return *count as usize - self.placed.iter().filter(|(_, v)| **v == *veggie).count();
         }

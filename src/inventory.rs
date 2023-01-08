@@ -5,7 +5,7 @@ use bevy_text_mode::TextModeTextureAtlasSprite;
 use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, util};
-use crate::editor::DraggedTile;
+use crate::editor::{DraggedTile, InEditor};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridUI, GridVeggie, PreviousPos};
 use crate::loading::Textures;
 use crate::text::{ChangeText, spawn_text};
@@ -42,6 +42,7 @@ fn display(
     mut event: EventReader<DisplayLevel>,
     puzzle: Res<CurrentPuzzle>,
     textures: Res<Textures>,
+    in_editor: Res<InEditor>,
 ) {
     for _ in event.iter() {
         if let Some(puzzle) = &puzzle.0 {
@@ -61,19 +62,21 @@ fn display(
                     .insert(InventoryUI)
                     .insert(InventoryVeg(veg.clone()));
 
-                let text = spawn_text(
-                    &mut commands,
-                    &textures,
-                    Vec3::new(w + 40., h + 48. * i as f32 + 8., util::z::COUNT_TEXT),
-                    &format!("x{:0>2}", count),
-                    Colors::DarkRed.get(),
-                    Colors::Beige.get(),
-                );
+                if !in_editor.0 {
+                    let text = spawn_text(
+                        &mut commands,
+                        &textures,
+                        Vec3::new(w + 40., h + 48. * i as f32 + 8., util::z::COUNT_TEXT),
+                        &format!("x{:0>2}", count),
+                        Colors::DarkRed.get(),
+                        Colors::Beige.get(),
+                    );
 
-                commands
-                    .entity(text)
-                    .insert(InventoryUI)
-                    .insert(InventoryCount(veg.clone()));
+                    commands
+                        .entity(text)
+                        .insert(InventoryUI)
+                        .insert(InventoryCount(veg.clone()));
+                }
             }
         }
     }
@@ -84,13 +87,14 @@ fn update_counts(
     puzzle: Res<CurrentPuzzle>,
     mut grid_changed: EventReader<GridChanged>,
     mut change_text: EventWriter<ChangeText>,
+    in_editor: Res<InEditor>,
 ) {
     if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_ref().unwrap();
 
     for _ in grid_changed.iter() {
         for (inv_count, e) in counts.iter() {
-            let available = puzzle.remaining_veggie(&inv_count.0);
+            let available = puzzle.remaining_veggie(&inv_count.0, &in_editor);
             let text = format!("x{:0>2}", available);
             change_text.send(ChangeText(e, text));
         }
@@ -110,6 +114,7 @@ fn handle_click(
     windows: Res<Windows>,
     textures: Res<Textures>,
     puzzle: Res<CurrentPuzzle>,
+    in_editor: Res<InEditor>,
 ) {
     if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_ref().unwrap();
@@ -121,7 +126,7 @@ fn handle_click(
                 (t.translation.x + 20. - pos.x / 2.).abs() < 20.
                 && (t.translation.y + 20. - pos.y / 2.).abs() < 20.
             ).nth(0) {
-                if puzzle.remaining_veggie(&v.0) == 0 { return; }
+                if puzzle.remaining_veggie(&v.0, &in_editor) == 0 { return; }
 
                 // Spawn a veggie
                 let veg_e = spawn_veggie(

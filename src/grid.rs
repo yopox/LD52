@@ -48,7 +48,7 @@ fn setup(
 ) {
     // TODO: Load real level
     puzzle.0 = Some(Puzzle {
-        size: (4, 3),
+        size: (3, 3),
         veggies: HashMap::from([
             (Veggie::Strawberry, 2),
             (Veggie::Carrot, 1),
@@ -59,9 +59,9 @@ fn setup(
             (Veggie::Apple, 2),
         ]),
         tiles: HashMap::from([
-            ((1, 1), Tile::Rock),
-            ((2, 2), Tile::Water),
-            ((3, 2), Tile::Water),
+            // ((1, 1), Tile::Rock),
+            // ((2, 2), Tile::Water),
+            // ((3, 2), Tile::Water),
         ]),
         placed: HashMap::new(),
     });
