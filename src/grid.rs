@@ -47,7 +47,7 @@ fn setup(
     // TODO: Load real level
     puzzle.0 = Some(Puzzle {
         size: (4, 3),
-        veggies: vec![
+        veggies: HashMap::from([
             (Veggie::Strawberry, 2),
             (Veggie::Carrot, 1),
             (Veggie::Garlic, 4),
@@ -55,7 +55,7 @@ fn setup(
             (Veggie::Mint, 2),
             (Veggie::Tomato, 2),
             (Veggie::Apple, 2),
-        ],
+        ]),
         tiles: Default::default(),
         placed: HashMap::new(),
     });

@@ -4,9 +4,18 @@ use crate::veggie::Veggie;
 
 pub struct Puzzle {
     pub size: (i8, i8),
-    pub veggies: Vec<(Veggie, u8)>,
+    pub veggies: HashMap<Veggie, u8>,
     pub tiles: HashMap<(i8, i8), Tile>,
     pub placed: HashMap<(i8, i8), Veggie>,
+}
+
+impl Puzzle {
+    pub fn remaining_veggie(&self, veggie: &Veggie) -> usize {
+        if let Some(count) = self.veggies.get(veggie) {
+            return *count as usize - self.placed.iter().filter(|(_, v)| **v == *veggie).count();
+        }
+        return 0;
+    }
 }
 
 #[derive(Eq, PartialEq)]

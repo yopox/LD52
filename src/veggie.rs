@@ -5,7 +5,7 @@ use strum::EnumIter;
 use crate::loading::Textures;
 use crate::util::Colors;
 
-#[derive(Eq, PartialEq, Copy, Clone, Debug, EnumIter, Component)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, EnumIter, Hash, Component)]
 pub enum Veggie {
     Strawberry,
     Tomato,

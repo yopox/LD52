@@ -34,5 +34,6 @@ pub mod z {
     pub const TILE: f32 = 1.;
     pub const VEGGIE: f32 = 2.;
     pub const VEG_UI: f32 = 3.;
+    pub const COUNT_TEXT: f32 = 3.5;
     pub const VEG_DRAG: f32 = 4.;
 }

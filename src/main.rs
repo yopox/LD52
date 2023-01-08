@@ -8,6 +8,7 @@ mod grid;
 mod puzzle;
 mod inventory;
 mod tween;
+mod text;
 
 use bevy::prelude::*;
 use bevy_text_mode::{TextModePlugin, TextModeTextureAtlasSprite};
@@ -15,6 +16,7 @@ use bevy_tweening::{component_animator_system, TweeningPlugin};
 use crate::grid::GridPlugin;
 use crate::inventory::InventoryPlugin;
 use crate::loading::LoadingPlugin;
+use crate::text::TextPlugin;
 use crate::title::TitlePlugin;
 use crate::veggie::VeggiePlugin;
 
@@ -52,6 +54,7 @@ fn main() {
         .add_system(component_animator_system::<TextureAtlasSprite>)
         .add_system(component_animator_system::<TextModeTextureAtlasSprite>)
         .add_plugin(VeggiePlugin)
+        .add_plugin(TextPlugin)
         .add_plugin(LoadingPlugin)
         .add_plugin(TitlePlugin)
         .add_plugin(GridPlugin)
