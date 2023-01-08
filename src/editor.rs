@@ -147,7 +147,10 @@ fn handle_click(
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
     textures: Res<Textures>,
+    in_editor: Res<InEditor>,
 ) {
+    if !in_editor.0 { return; }
+
     if mouse.just_pressed(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
         if let Some(pos) = window.cursor_position() {
@@ -186,7 +189,9 @@ fn handle_drop(
     query: Query<(Entity, &DraggedTile, &Transform, Option<&PreviousPos>)>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut grid_changed: EventWriter<GridChanged>,
+    in_editor: Res<InEditor>,
 ) {
+    if !in_editor.0 { return; }
     if puzzle.0.is_none() { return; }
     let mut puzzle = puzzle.0.as_mut().unwrap();
 
@@ -256,7 +261,9 @@ fn handle_click_on_grid(
     windows: Res<Windows>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut grid_changed: EventWriter<GridChanged>,
+    in_editor: Res<InEditor>,
 ) {
+    if !in_editor.0 { return; }
     if puzzle.0.is_none() { return; }
     let mut puzzle = puzzle.0.as_mut().unwrap();
 
@@ -285,7 +292,9 @@ fn click_on_button(
     mut clicks: EventReader<ButtonClick>,
     mut current_puzzle: ResMut<CurrentPuzzle>,
     mut display_level: EventWriter<DisplayLevel>,
+    in_editor: Res<InEditor>,
 ) {
+    if !in_editor.0 { return; }
     if current_puzzle.0.is_none() { return; }
     let mut puzzle = current_puzzle.0.as_mut().unwrap();
 
@@ -347,7 +356,9 @@ fn update_author(
     keyboard_input: Res<Input<KeyCode>>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut refresh: EventWriter<DisplayLevel>,
+    in_editor: Res<InEditor>,
 ) {
+    if !in_editor.0 { return; }
     for code in keyboard_input.get_just_pressed() {
         match get_char(code) {
             Some('<') => { puzzle.0.as_mut().unwrap().author.pop(); },
