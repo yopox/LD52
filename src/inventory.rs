@@ -7,7 +7,7 @@ use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, util};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridVeggie};
 use crate::loading::Textures;
-use crate::veggie::{Expression, spawn_veggie, UpdateFaces, Veggie, VeggieCount};
+use crate::veggie::{Expression, spawn_veggie, UpdateFaces, Veggie};
 
 pub struct InventoryPlugin;
 
@@ -16,9 +16,9 @@ impl Plugin for InventoryPlugin {
         app
             .add_system_set(SystemSet::on_update(GameState::Puzzle)
                 .with_system(display)
-                .with_system(handle_click)
-                .with_system(update_dragged)
-                .with_system(handle_drop)
+                .with_system(handle_click.label("logic"))
+                .with_system(update_dragged.label("logic"))
+                .with_system(handle_drop.label("logic"))
             )
             .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
     }
@@ -67,7 +67,6 @@ fn handle_click(
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
     textures: Res<Textures>,
-    mut count: ResMut<VeggieCount>,
 ) {
     if mouse.just_pressed(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
@@ -173,7 +172,7 @@ fn handle_drop(
                         ));
                 }
                 update_faces.send(UpdateFaces(e, (Expression::Sad, Expression::Sad)));
-            }
+                info!("inventory::handle_drop UpdateFaces {:?};{:?}", Expression::Sad, Expression::Sad);}
         }
     }
 }

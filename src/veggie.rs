@@ -5,7 +5,7 @@ use strum::EnumIter;
 use crate::loading::Textures;
 use crate::util::Colors;
 
-#[derive(Eq, PartialEq, Copy, Clone, Debug, EnumIter)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, EnumIter, Component)]
 pub enum Veggie {
     Strawberry,
     Tomato,
@@ -55,20 +55,16 @@ pub struct VeggiePlugin;
 impl Plugin for VeggiePlugin {
     fn build(&self, app: &mut App) {
         app
-            .insert_resource(VeggieCount(0))
             .add_event::<UpdateFaces>()
             .add_system(update_faces);
     }
 }
 
-#[derive(Resource)]
-pub struct VeggieCount(pub u8);
-
 pub struct UpdateFaces(pub Entity, pub (Expression, Expression));
 
 fn update_faces(
     mut events: EventReader<UpdateFaces>,
-    veg_children: Query<&Children, With<TextureAtlasSprite>>,
+    veg_children: Query<&Children, With<Veggie>>,
     mut faces: Query<&mut TextModeTextureAtlasSprite, With<Face>>,
 ) {
     for UpdateFaces(e, (e1, e2)) in events.iter() {
@@ -89,6 +85,7 @@ fn update_faces(
 #[derive(Component)]
 pub struct Face;
 
+#[derive(Debug)]
 pub enum Expression {
     Neutral,
     Surprised,
@@ -128,6 +125,7 @@ pub fn spawn_veggie<'w, 's, 'a>(
             },
             ..Default::default()
         })
+        .insert(*veggie)
         .with_children(|parent| {
             veggie.faces().iter().for_each(|(x, y)| {
                 parent

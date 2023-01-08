@@ -5,8 +5,7 @@ use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
 use crate::inventory::DraggedVeg;
 use crate::loading::Textures;
 use crate::puzzle::Puzzle;
-use crate::util::Colors;
-use crate::veggie::{Expression, UpdateFaces, Veggie, VeggieCount};
+use crate::veggie::{Expression, UpdateFaces, Veggie};
 
 pub struct GridPlugin;
 
@@ -19,9 +18,9 @@ impl Plugin for GridPlugin {
             .add_event::<GridChanged>()
             .add_system_set(SystemSet::on_enter(GameState::Puzzle).with_system(setup))
             .add_system_set(SystemSet::on_update(GameState::Puzzle)
-                .with_system(update)
+                .with_system(update.before("logic"))
                 .with_system(display_level)
-                .with_system(handle_click)
+                .with_system(handle_click.label("logic"))
             )
             .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
     }
@@ -44,21 +43,18 @@ pub struct GridVeggie(pub Veggie, pub (i8, i8), pub (bool, bool));
 fn setup(
     mut puzzle: ResMut<CurrentPuzzle>,
     mut display_level: EventWriter<DisplayLevel>,
-    mut count: ResMut<VeggieCount>,
 ) {
-    count.0 = 0;
-
     // TODO: Load real level
     puzzle.0 = Some(Puzzle {
-        size: (4, 3),
+        size: (8, 5),
         veggies: vec![
             (Veggie::Strawberry, 2),
             (Veggie::Carrot, 1),
             (Veggie::Garlic, 4),
             (Veggie::Cherry, 2),
-            // (Veggie::Mint, 2),
-            // (Veggie::Tomato, 2),
-            // (Veggie::Apple, 2),
+            (Veggie::Mint, 2),
+            (Veggie::Tomato, 2),
+            (Veggie::Apple, 2),
         ],
         tiles: Default::default(),
         placed: HashMap::new(),
@@ -175,6 +171,7 @@ fn update(
             veg.2 = state;
             let exp = |b| if b { Expression::Happy } else { Expression::Sad };
             update_faces.send(UpdateFaces(e, (exp(state.0), exp(state.1))));
+            info!("grid::update UpdateFaces {:?};{:?}", exp(state.0), exp(state.1));
         }
     }
 }
@@ -186,7 +183,7 @@ fn handle_click(
     windows: Res<Windows>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut update_faces: EventWriter<UpdateFaces>,
-    mut count: ResMut<VeggieCount>,
+    mut grid_changed: EventWriter<GridChanged>,
 ) {
     if puzzle.0.is_none() { return; }
     let mut puzzle = puzzle.0.as_mut().unwrap();
@@ -204,8 +201,9 @@ fn handle_click(
                     .remove::<GridVeggie>();
                 puzzle.placed.remove(&v.1);
                 t.translation.z = util::z::VEG_DRAG;
-                count.0 += 1;
+                grid_changed.send(GridChanged);
                 update_faces.send(UpdateFaces(e, (Expression::Surprised, Expression::Surprised)));
+                info!("grid::handle_click UpdateFaces {:?};{:?}", Expression::Surprised, Expression::Surprised);
             }
         }
     }
