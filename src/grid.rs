@@ -49,7 +49,7 @@ fn setup(
     // TODO: Load real level
     puzzle.0 = Some(Puzzle {
         author: "yopox".to_string(),
-        size: (5, 3),
+        size: (10, 7),
         veggies: HashMap::new(),
         tiles: HashMap::new(),
         placed: HashMap::new(),

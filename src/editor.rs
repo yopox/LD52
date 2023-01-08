@@ -24,6 +24,7 @@ impl Plugin for EditorPlugin {
                 .with_system(handle_click)
                 .with_system(handle_drop)
                 .with_system(handle_click_on_grid)
+                .with_system(update_author)
                 .with_system(click_on_button.after("logic"))
             )
             .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
@@ -38,6 +39,9 @@ struct EditorUI;
 
 #[derive(Component)]
 struct EditorTile(Tile);
+
+#[derive(Component)]
+struct AuthorName;
 
 fn display_editor(
     mut commands: Commands,
@@ -87,9 +91,9 @@ fn display_editor(
             (grid_x + 12., grid_y + grid_h + 8., "-", Colors::Red, Colors::Beige, TextButtonId::ExpandShrink(false, true)),
             (grid_x + grid_w + 8., grid_y + grid_h - 8., "+", Colors::Green, Colors::Beige, TextButtonId::ExpandShrink(true, false)),
             (grid_x + grid_w + 8., grid_y + grid_h - 20., "-", Colors::Red, Colors::Beige, TextButtonId::ExpandShrink(false, false)),
-            (WIDTH - 88., 80., "save to -\nclipboard", Colors::DarkRed, Colors::Beige, TextButtonId::Export),
-            (WIDTH - 88., 80. - 24., "load from\nclipboard", Colors::DarkRed, Colors::Beige, TextButtonId::Import),
-            (WIDTH - 88., 80. - 48., "exit ----", Colors::DarkRed, Colors::Beige, TextButtonId::Exit),
+            (WIDTH - 96., 80., "save to  \nclipboard", Colors::DarkRed, Colors::Beige, TextButtonId::Export),
+            (WIDTH - 96., 80. - 24., "load from\nclipboard", Colors::DarkRed, Colors::Beige, TextButtonId::Import),
+            (WIDTH - 96., 80. - 48., "- leave -", Colors::DarkRed, Colors::Beige, TextButtonId::Exit),
         ] {
             let id = spawn_text(
                 &mut commands,
@@ -106,7 +110,28 @@ fn display_editor(
                 .insert(EditorUI);
         }
 
+        let id = spawn_text(
+            &mut commands,
+            &textures,
+            Vec3::new(WIDTH - 96., 80. + 24., util::z::VEG_UI),
+            "author:",
+            Colors::DarkRed.get(),
+            Colors::Beige.get(),
+        );
+        commands.entity(id).insert(EditorUI);
 
+        let id = spawn_text(
+            &mut commands,
+            &textures,
+            Vec3::new(WIDTH - 96., 80. + 16., util::z::VEG_UI),
+            &puzzle.author,
+            Colors::DarkRed.get(),
+            Colors::Beige.get(),
+        );
+        commands
+            .entity(id)
+            .insert(EditorUI)
+            .insert(AuthorName);
 
         break;
     }
@@ -315,6 +340,57 @@ fn click_on_button(
             }
             _ => {}
         }
+    }
+}
+
+fn update_author(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut puzzle: ResMut<CurrentPuzzle>,
+    mut refresh: EventWriter<DisplayLevel>,
+) {
+    for code in keyboard_input.get_just_pressed() {
+        match get_char(code) {
+            Some('<') => { puzzle.0.as_mut().unwrap().author.pop(); },
+            Some(c) => {
+                let mut p = puzzle.0.as_mut().unwrap();
+                if p.author.len() < 9 { p.author.push(c); }
+            },
+            None => { return; },
+        }
+        refresh.send(DisplayLevel);
+    }
+}
+
+fn get_char(code: &KeyCode) -> Option<char> {
+    match code {
+        KeyCode::A => Some('a'),
+        KeyCode::B => Some('b'),
+        KeyCode::C => Some('c'),
+        KeyCode::D => Some('d'),
+        KeyCode::E => Some('e'),
+        KeyCode::F => Some('f'),
+        KeyCode::G => Some('g'),
+        KeyCode::H => Some('h'),
+        KeyCode::I => Some('i'),
+        KeyCode::J => Some('j'),
+        KeyCode::K => Some('k'),
+        KeyCode::L => Some('l'),
+        KeyCode::M => Some('m'),
+        KeyCode::N => Some('n'),
+        KeyCode::O => Some('o'),
+        KeyCode::P => Some('p'),
+        KeyCode::Q => Some('q'),
+        KeyCode::R => Some('r'),
+        KeyCode::S => Some('s'),
+        KeyCode::T => Some('t'),
+        KeyCode::U => Some('u'),
+        KeyCode::V => Some('v'),
+        KeyCode::W => Some('w'),
+        KeyCode::X => Some('x'),
+        KeyCode::Y => Some('y'),
+        KeyCode::Z => Some('z'),
+        KeyCode::Back => Some('<'),
+        _ => None,
     }
 }
 
