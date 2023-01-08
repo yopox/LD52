@@ -5,7 +5,8 @@ use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
 use crate::inventory::DraggedVeg;
 use crate::loading::Textures;
 use crate::puzzle::Puzzle;
-use crate::veggie::{Expression, UpdateFaces, Veggie};
+use crate::util::Colors;
+use crate::veggie::{Expression, UpdateFaces, Veggie, VeggieCount};
 
 pub struct GridPlugin;
 
@@ -43,7 +44,10 @@ pub struct GridVeggie(pub Veggie, pub (i8, i8), pub (bool, bool));
 fn setup(
     mut puzzle: ResMut<CurrentPuzzle>,
     mut display_level: EventWriter<DisplayLevel>,
+    mut count: ResMut<VeggieCount>,
 ) {
+    count.0 = 0;
+
     // TODO: Load real level
     puzzle.0 = Some(Puzzle {
         size: (4, 3),
@@ -177,11 +181,12 @@ fn update(
 
 fn handle_click(
     mut commands: Commands,
-    veggies: Query<(Entity, &GridVeggie, &Transform)>,
+    mut veggies: Query<(Entity, &GridVeggie, &mut Transform)>,
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut update_faces: EventWriter<UpdateFaces>,
+    mut count: ResMut<VeggieCount>,
 ) {
     if puzzle.0.is_none() { return; }
     let mut puzzle = puzzle.0.as_mut().unwrap();
@@ -189,7 +194,7 @@ fn handle_click(
     if mouse.just_pressed(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
         if let Some(pos) = window.cursor_position() {
-            if let Some((e, v, t)) = veggies.iter().filter(|(_, _, t)|
+            if let Some((e, v, mut t)) = veggies.iter_mut().filter(|(_, _, t)|
                 (t.translation.x + 20. - pos.x / 2.).abs() < 20.
                     && (t.translation.y + 20. - pos.y / 2.).abs() < 20.
             ).nth(0) {
@@ -198,6 +203,8 @@ fn handle_click(
                     .insert(DraggedVeg(v.0))
                     .remove::<GridVeggie>();
                 puzzle.placed.remove(&v.1);
+                t.translation.z = util::z::VEG_DRAG;
+                count.0 += 1;
                 update_faces.send(UpdateFaces(e, (Expression::Surprised, Expression::Surprised)));
             }
         }

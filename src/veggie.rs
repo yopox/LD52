@@ -55,10 +55,14 @@ pub struct VeggiePlugin;
 impl Plugin for VeggiePlugin {
     fn build(&self, app: &mut App) {
         app
+            .insert_resource(VeggieCount(0))
             .add_event::<UpdateFaces>()
             .add_system(update_faces);
     }
 }
+
+#[derive(Resource)]
+pub struct VeggieCount(pub u8);
 
 pub struct UpdateFaces(pub Entity, pub (Expression, Expression));
 
@@ -137,7 +141,7 @@ pub fn spawn_veggie<'w, 's, 'a>(
                             ..Default::default()
                         },
                         texture_atlas: textures.faces.clone(),
-                        transform: Transform::from_xyz(*x, *y, 0.1),
+                        transform: Transform::from_xyz(*x, *y, 0.0000001),
                         ..Default::default()
                     })
                     .insert(Face);

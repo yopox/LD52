@@ -7,7 +7,7 @@ use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, util};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridVeggie};
 use crate::loading::Textures;
-use crate::veggie::{Expression, spawn_veggie, UpdateFaces, Veggie};
+use crate::veggie::{Expression, spawn_veggie, UpdateFaces, Veggie, VeggieCount};
 
 pub struct InventoryPlugin;
 
@@ -67,6 +67,7 @@ fn handle_click(
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
     textures: Res<Textures>,
+    mut count: ResMut<VeggieCount>,
 ) {
     if mouse.just_pressed(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
@@ -109,7 +110,7 @@ fn handle_drop(
     mut commands: Commands,
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
-    mut query: Query<(Entity, &DraggedVeg, &Transform, &Children)>,
+    query: Query<(Entity, &DraggedVeg, &Transform, &Children)>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut update_faces: EventWriter<UpdateFaces>,
     mut grid_changed: EventWriter<GridChanged>,
@@ -122,7 +123,7 @@ fn handle_drop(
     if mouse.just_released(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
         if let Some(pos) = window.cursor_position() {
-            for (e, v, t, c) in query.iter_mut() {
+            for (e, v, t, c) in query.iter() {
                 commands.entity(e).remove::<DraggedVeg>();
 
                 // Drop on a free tile of the grid -> animate to pos + update count
@@ -137,7 +138,7 @@ fn handle_drop(
                                     t.translation.xy(),
                                     crate::grid::get_tile_pos(tile, puzzle.size)
                                         .add(Vec2::new(0., 0.)),
-                                    t.translation.z,
+                                    util::z::VEGGIE,
                                     animation_len / 2
                                 )
                             ))
