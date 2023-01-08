@@ -5,7 +5,7 @@ use bevy_text_mode::TextModeTextureAtlasSprite;
 use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, util};
-use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridVeggie};
+use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridVeggie, PreviousPos};
 use crate::loading::Textures;
 use crate::veggie::{Expression, spawn_veggie, UpdateFaces, Veggie};
 
@@ -109,7 +109,7 @@ fn handle_drop(
     mut commands: Commands,
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
-    query: Query<(Entity, &DraggedVeg, &Transform, &Children)>,
+    query: Query<(Entity, &DraggedVeg, &Transform, &Children, Option<&PreviousPos>)>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut update_faces: EventWriter<UpdateFaces>,
     mut grid_changed: EventWriter<GridChanged>,
@@ -122,16 +122,25 @@ fn handle_drop(
     if mouse.just_released(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
         if let Some(pos) = window.cursor_position() {
-            for (e, v, t, c) in query.iter() {
+            for (e, v, t, c, prev) in query.iter() {
                 commands.entity(e).remove::<DraggedVeg>();
 
                 // Drop on a free tile of the grid -> animate to pos + update count
                 if let Some(tile) = crate::grid::get_pos_at(pos, puzzle.size) {
-                    if !puzzle.placed.contains_key(&tile) && !puzzle.tiles.contains_key(&tile) {
+                    let destination = if !puzzle.placed.contains_key(&tile) && !puzzle.tiles.contains_key(&tile) {
+                        Some(tile)
+                    } else if prev.is_some() {
+                        Some(prev.unwrap().0)
+                    } else {
+                        None
+                    };
+                    if destination.is_some() {
+                        let tile = destination.unwrap();
                         puzzle.placed.insert(tile, v.0.clone());
 
                         commands
                             .entity(e)
+                            .remove::<PreviousPos>()
                             .insert(Animator::<Transform>::new(
                                 crate::tween::position_out(
                                     t.translation.xy(),

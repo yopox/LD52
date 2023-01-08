@@ -46,7 +46,7 @@ fn setup(
 ) {
     // TODO: Load real level
     puzzle.0 = Some(Puzzle {
-        size: (8, 5),
+        size: (4, 3),
         veggies: vec![
             (Veggie::Strawberry, 2),
             (Veggie::Carrot, 1),
@@ -175,6 +175,9 @@ fn update(
     }
 }
 
+#[derive(Component)]
+pub struct PreviousPos(pub (i8, i8));
+
 fn handle_click(
     mut commands: Commands,
     mut veggies: Query<(Entity, &GridVeggie, &mut Transform)>,
@@ -197,6 +200,7 @@ fn handle_click(
                 commands
                     .entity(e)
                     .insert(DraggedVeg(v.0))
+                    .insert(PreviousPos(v.1))
                     .remove::<GridVeggie>();
                 puzzle.placed.remove(&v.1);
                 t.translation.z = util::z::VEG_DRAG;
