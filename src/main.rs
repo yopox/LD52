@@ -18,6 +18,7 @@ use crate::inventory::InventoryPlugin;
 use crate::loading::LoadingPlugin;
 use crate::text::TextPlugin;
 use crate::title::TitlePlugin;
+use crate::util::Colors;
 use crate::veggie::VeggiePlugin;
 
 // Dimensions in "zoomed" pixels (camera has a 2x factor)
@@ -33,7 +34,7 @@ enum GameState {
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(Color::hex("fff1e8").unwrap()))
+        .insert_resource(ClearColor(Colors::DarkRed.get()))
         .insert_resource(Msaa { samples: 1 })
         .add_plugins(DefaultPlugins
             .set(ImagePlugin::default_nearest())

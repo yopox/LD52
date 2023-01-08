@@ -66,8 +66,8 @@ fn display(
                     &textures,
                     Vec3::new(w + 40., h + 48. * i as f32 + 8., util::z::COUNT_TEXT),
                     &format!("x{:0>2}", count),
+                    Colors::DarkRed.get(),
                     Colors::Beige.get(),
-                    Colors::Black.get(),
                 );
 
                 commands

@@ -12,6 +12,7 @@ pub enum Colors {
     // Custom colors
     DarkBrown,
     Brown,
+    DarkRed,
 }
 
 impl Colors {
@@ -26,6 +27,7 @@ impl Colors {
             Colors::Grey => Color::hex("c2c3c7").unwrap(),
             Colors::DarkBrown => Color::hex("441506").unwrap(),
             Colors::Brown => Color::hex("662916").unwrap(),
+            Colors::DarkRed => Color::hex("553737").unwrap(),
         }
     }
 }
