@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
 use crate::loading::Textures;
+use crate::util::collides;
 
 pub struct TextPlugin;
 
@@ -9,7 +10,10 @@ impl Plugin for TextPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_event::<ChangeText>()
-            .add_system(update_text);
+            .add_event::<ButtonClick>()
+            .add_system(update_text)
+            .add_system(handle_click)
+        ;
     }
 }
 
@@ -73,7 +77,6 @@ fn char_to_index(c: char) -> usize {
 pub struct ChangeText(pub Entity, pub String);
 
 fn update_text(
-    mut commands: Commands,
     mut events: EventReader<ChangeText>,
     mut text_query: Query<(&mut Text, Entity)>,
     mut tile_query: Query<(&mut TextModeTextureAtlasSprite, &CharId, &Parent)>,
@@ -94,13 +97,36 @@ fn update_text(
                     if let Some((tile, _, _)) = tiles.iter_mut().filter(|(_, id, _)| id.0 == line_n && id.1 == char_n).nth(0) {
                         // Update existing char
                         tile.index = char_to_index(c);
-                    } else {
-                        // Spawn new char
                     }
                 }
             }
 
             text.0 = lines;
+        }
+    }
+}
+
+#[derive(Component, Eq, PartialEq, Clone)]
+pub enum TextButtonId {
+    ExpandShrink(bool, bool),
+}
+
+pub struct ButtonClick(pub TextButtonId);
+
+fn handle_click(
+    mut buttons: Query<(&Text, &mut Transform, &TextButtonId)>,
+    mouse: Res<Input<MouseButton>>,
+    windows: Res<Windows>,
+    mut ev: EventWriter<ButtonClick>,
+) {
+    if mouse.just_pressed(MouseButton::Left) {
+        let window = windows.get_primary().unwrap();
+        if let Some(pos) = window.cursor_position() {
+            if let Some((_, _, id)) = buttons.iter().filter(|(text, t, _)|
+                collides(t.translation, text.0.get(0).unwrap().len() as f32 * 8., 8., pos)
+            ).nth(0) {
+                ev.send(ButtonClick(id.clone()));
+            }
         }
     }
 }

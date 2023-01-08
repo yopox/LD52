@@ -8,8 +8,8 @@ use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridTile, PreviousPos};
 use crate::loading::Textures;
 use crate::puzzle::Tile;
-use crate::text::spawn_text;
-use crate::util::{collides, Colors};
+use crate::text::{ButtonClick, spawn_text, TextButtonId};
+use crate::util::Colors;
 
 pub struct EditorPlugin;
 
@@ -97,7 +97,7 @@ fn display_editor(
 
             commands
                 .entity(id)
-                .insert(ExpandShrinkButton { expand, rows })
+                .insert(TextButtonId::ExpandShrink(expand, rows))
                 .insert(EditorUI);
         }
 
@@ -248,37 +248,26 @@ fn handle_click_on_grid(
     }
 }
 
-#[derive(Component)]
-struct ExpandShrinkButton {
-    expand: bool,
-    rows: bool,
-}
-
 fn click_on_button(
-    mut buttons: Query<(&ExpandShrinkButton, &mut Transform)>,
-    mouse: Res<Input<MouseButton>>,
-    windows: Res<Windows>,
+    mut clicks: EventReader<ButtonClick>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut display_level: EventWriter<DisplayLevel>,
 ) {
     if puzzle.0.is_none() { return; }
     let mut puzzle = puzzle.0.as_mut().unwrap();
 
-    if mouse.just_pressed(MouseButton::Left) {
-        let window = windows.get_primary().unwrap();
-        if let Some(pos) = window.cursor_position() {
-            if let Some((e, _)) = buttons.iter().filter(|(_, t)|
-                collides(t.translation, 8., 8., pos)
-            ).nth(0) {
+    for click in clicks.iter() {
+        match click.0 {
+            TextButtonId::ExpandShrink(expand, rows) => {
                 // Expand at max size or shrink at min size -> impossible
-                if e.expand && (e.rows && puzzle.size.1 >= puzzle::MAX_H || !e.rows && puzzle.size.0 >= puzzle::MAX_W)
-                || !e.expand && (e.rows && puzzle.size.1 == 1 || !e.rows && puzzle.size.0 == 1) { return; }
+                if expand && (rows && puzzle.size.1 >= puzzle::MAX_H || !rows && puzzle.size.0 >= puzzle::MAX_W)
+                    || !expand && (rows && puzzle.size.1 == 1 || !rows && puzzle.size.0 == 1) { return; }
 
                 // Update puzzle dimensions
-                if e.expand {
-                    if e.rows { puzzle.size.1 += 1; } else { puzzle.size.0 += 1; }
+                if expand {
+                    if rows { puzzle.size.1 += 1; } else { puzzle.size.0 += 1; }
                 } else {
-                    if e.rows {
+                    if rows {
                         puzzle.size.1 -= 1;
                         // Remove placed veggies / tiles on the removed row
                         (0..puzzle.size.0).for_each(|x| {
@@ -297,8 +286,6 @@ fn click_on_button(
 
                 // Reposition stuff
                 display_level.send(DisplayLevel);
-
-
             }
         }
     }
