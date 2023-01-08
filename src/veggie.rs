@@ -132,7 +132,7 @@ pub fn spawn_veggie<'w, 's, 'a>(
                     .spawn(TextModeSpriteSheetBundle {
                         sprite: TextModeTextureAtlasSprite {
                             bg: veggie.face_color(),
-                            fg: Colors::Beige.get(),
+                            fg: Colors::Black.get(),
                             alpha: 1.,
                             index: expression.index(),
                             anchor: Anchor::BottomLeft,

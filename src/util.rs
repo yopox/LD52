@@ -1,6 +1,8 @@
 use bevy::prelude::Color;
 
 pub enum Colors {
+    Black,
+    Navy,
     Beige,
     Red,
     Green,
@@ -11,6 +13,8 @@ pub enum Colors {
 impl Colors {
     pub fn get(&self) -> Color {
         match self {
+            Colors::Black => Color::BLACK,
+            Colors::Navy => Color::hex("1d2b53").unwrap(),
             Colors::Beige => Color::hex("fff1e8").unwrap(),
             Colors::Red => Color::hex("ff004d").unwrap(),
             Colors::Green => Color::hex("008751").unwrap(),

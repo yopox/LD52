@@ -79,7 +79,7 @@ fn handle_click(
                 let veg_e = spawn_veggie(
                     &mut commands,
                     &textures,
-                    Vec3::new(pos.x / 2. - 20., pos.y / 2. - 20., util::z::VEG_DRAG),
+                    Vec3::new(pos.x / 2. - 20., pos.y / 2. - 20. + 8., util::z::VEG_DRAG),
                     &v.0,
                     Expression::Surprised,
                 );
@@ -100,7 +100,7 @@ fn update_dragged(
     if let Some(pos) = window.cursor_position() {
         query.iter_mut().for_each(|mut t| {
             t.translation.x = pos.x / 2. - 20.;
-            t.translation.y = pos.y / 2. - 20.;
+            t.translation.y = pos.y / 2. - 20. + 8.;
         })
     }
 }
@@ -172,7 +172,7 @@ fn handle_drop(
                         ));
                 }
                 update_faces.send(UpdateFaces(e, (Expression::Sad, Expression::Sad)));
-                info!("inventory::handle_drop UpdateFaces {:?};{:?}", Expression::Sad, Expression::Sad);}
+            }
         }
     }
 }

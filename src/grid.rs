@@ -171,7 +171,6 @@ fn update(
             veg.2 = state;
             let exp = |b| if b { Expression::Happy } else { Expression::Sad };
             update_faces.send(UpdateFaces(e, (exp(state.0), exp(state.1))));
-            info!("grid::update UpdateFaces {:?};{:?}", exp(state.0), exp(state.1));
         }
     }
 }
@@ -203,7 +202,6 @@ fn handle_click(
                 t.translation.z = util::z::VEG_DRAG;
                 grid_changed.send(GridChanged);
                 update_faces.send(UpdateFaces(e, (Expression::Surprised, Expression::Surprised)));
-                info!("grid::handle_click UpdateFaces {:?};{:?}", Expression::Surprised, Expression::Surprised);
             }
         }
     }
