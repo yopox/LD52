@@ -160,22 +160,22 @@ fn win_animation(
                 Vec2::new(pos.x + 8., pos.y + 24.),
                 Vec2::new(pos.x + 8., pos.y + 32.),
                 util::z::WIN_HEART,
-                1200
+                1000
             )))
-            .insert(Animator::new(tween::tween_sprite_opacity(1000, false)))
+            .insert(Animator::new(tween::tween_sprite_opacity(800, false)))
             .insert(PlayUI);
     }
 
     animation.frame += 1;
 
     if animation.n >= puzzle.placed.len() {
-        if animation.frame > 40 {
+        if animation.frame > 20 {
             commands.remove_resource::<WinAnimation>();
             block_input.0 = false;
             state.pop().unwrap_or_default();
             return;
         }
-    } else if animation.frame == 30 {
+    } else if animation.frame == 15 {
         animation.frame = 0;
         animation.n += 1;
     }
