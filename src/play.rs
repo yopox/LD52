@@ -139,7 +139,7 @@ fn check_finished(
         if puzzle.veggies.iter().all(|v| puzzle.remaining_veggie(v.0, false) == 0)
             && puzzle.is_valid().is_ok() {
             block_input.0 = true;
-            commands.insert_resource(WinAnimation { n: 0, frame: 0 });
+            commands.insert_resource(WinAnimation { n: 0, frame: 0, global: 0 });
 
             sfx.send(PlaySfxEvent(SFX::Win));
 
@@ -160,6 +160,7 @@ fn check_finished(
 struct WinAnimation {
     n: usize,
     frame: u8,
+    global: usize,
 }
 
 fn win_animation(
@@ -195,9 +196,10 @@ fn win_animation(
     }
 
     animation.frame += 1;
+    animation.global += 1;
 
     if animation.n >= puzzle.placed.len() {
-        if animation.frame > 20 {
+        if animation.frame > 20 && animation.global > 210 {
             commands.remove_resource::<WinAnimation>();
             block_input.0 = false;
             state.pop().unwrap();
