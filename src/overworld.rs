@@ -182,12 +182,12 @@ fn click_on_button(
                         commands.insert_resource(CurrentSlot(slot));
                         puzzle.prepare();
                         current_puzzle.as_mut().0 = Some(puzzle);
-                        state.set(GameState::Play).unwrap();
+                        state.push(GameState::Play).unwrap();
                     }
                 }
                 Slot::Tutorial(_) => {
                     commands.insert_resource(CurrentSlot(slot));
-                    state.set(GameState::Tutorial).unwrap();
+                    state.push(GameState::Tutorial).unwrap();
                 }
                 _ => {}
             }
