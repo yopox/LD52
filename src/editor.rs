@@ -324,6 +324,7 @@ fn click_on_button(
     mut current_puzzle: ResMut<CurrentPuzzle>,
     mut display_level: EventWriter<DisplayLevel>,
     in_editor: Res<InEditor>,
+    mut state: ResMut<State<GameState>>,
 ) {
     if !in_editor.0 { return; }
     if current_puzzle.0.is_none() { return; }
@@ -378,6 +379,11 @@ fn click_on_button(
                     }
                 }
             }
+
+            TextButtonId::Exit => {
+                state.set(GameState::Title).unwrap_or_default();
+            }
+
             _ => {}
         }
     }

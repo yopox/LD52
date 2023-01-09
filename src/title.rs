@@ -1,5 +1,7 @@
 use bevy::prelude::*;
-use crate::{GameState, util, WIDTH};
+use rand::random;
+use strum::IntoEnumIterator;
+use crate::{GameState, HEIGHT, util, WIDTH};
 use crate::loading::Textures;
 use crate::veggie::{Expression, spawn_veggie, Veggie};
 
@@ -17,61 +19,73 @@ impl Plugin for TitlePlugin {
 #[derive(Component)]
 struct TitleUI;
 
+fn get_combination(n: u8) -> Vec<(Veggie, f32, f32, Expression)> {
+    match n % 6 {
+        5 => vec![
+            (Veggie::Carrot, 313., 280., Expression::Sad),
+            (Veggie::Mint, 348., 280., Expression::Happy),
+        ],
+        4 => vec![
+            (Veggie::Mint, 312., 280., Expression::Happy),
+            (Veggie::Garlic, 348., 278., Expression::Sad),
+        ],
+        3 => vec![
+            (Veggie::Carrot, 167., 280., Expression::Neutral),
+            (Veggie::Carrot, 313., 280., Expression::Neutral),
+            (Veggie::Carrot, 348., 280., Expression::Neutral),
+            (Veggie::Carrot, 378., 280., Expression::Happy),
+            (Veggie::Carrot, 446., 280., Expression::Neutral),
+        ],
+        2 => vec![
+            (Veggie::Tomato, 167., 280., Expression::Sad),
+            (Veggie::Garlic, 395., 294., Expression::Happy),
+        ],
+        1 => vec![
+            (Veggie::Cherry, 167., 279., Expression::Sad),
+            (Veggie::Carrot, 313., 280., Expression::Sad),
+            (Veggie::Mint, 352., 280., Expression::Surprised),
+            (Veggie::Apple, 446., 280., Expression::Happy),
+        ],
+        _ => vec![
+            (Veggie::Strawberry, 243., 296., Expression::Sad),
+            (Veggie::Apple, 348., 280., Expression::Surprised),
+            (Veggie::Carrot, 446., 280., Expression::Happy),
+        ],
+    }
+}
+
 fn setup(
     mut commands: Commands,
     textures: Res<Textures>,
 ) {
-    let w = (WIDTH - 40. * 7.) / 2.;
-    let h = 196.;
-    spawn_veggie(
-        &mut commands,
-        &textures,
-        Vec3::new(w, h, util::z::VEGGIE),
-        &Veggie::Strawberry,
-        Expression::Happy,
-    );
-    spawn_veggie(
-        &mut commands,
-        &textures,
-        Vec3::new(w + 40., h, util::z::VEGGIE),
-        &Veggie::Apple,
-        Expression::Happy,
-    );
-    spawn_veggie(
-        &mut commands,
-        &textures,
-        Vec3::new(w + 2. * 40., h, util::z::VEGGIE),
-        &Veggie::Tomato,
-        Expression::Happy,
-    );
-    spawn_veggie(
-        &mut commands,
-        &textures,
-        Vec3::new(w + 3. * 40., h, util::z::VEGGIE),
-        &Veggie::Carrot,
-        Expression::Happy,
-    );
-    spawn_veggie(
-        &mut commands,
-        &textures,
-        Vec3::new(w + 4. * 40., h, util::z::VEGGIE),
-        &Veggie::Cherry,
-        Expression::Happy,
-    );
-    spawn_veggie(
-        &mut commands,
-        &textures,
-        Vec3::new(w + 5. * 40., h, util::z::VEGGIE),
-        &Veggie::Garlic,
-        Expression::Happy,
-    );
-    spawn_veggie(
-        &mut commands,
-        &textures,
-        Vec3::new(w + 6. * 40., h, util::z::VEGGIE),
-        &Veggie::Mint,
-        Expression::Happy,
-    );
+    // Title
+    commands
+        .spawn(SpriteBundle {
+            transform: Transform {
+                translation: Vec3::new(WIDTH / 2., HEIGHT * 3. / 4., 0.),
+                scale: Vec3::new(2., 2., 1.),
+                ..Default::default()
+            },
+            texture: textures.title.clone(),
+            ..Default::default()
+        })
+        .insert(TitleUI);
+
+    // Veggies
+
+    for (v, x, y, e) in get_combination((random::<f32>() * 6.) as u8) {
+        let id = spawn_veggie(
+            &mut commands,
+            &textures,
+            Vec3::new(x, y, util::z::VEGGIE),
+            &v,
+            e,
+        );
+
+        commands
+            .entity(id)
+            .insert(TitleUI);
+    }
 }
 
 fn update() {}
