@@ -8,9 +8,11 @@ use crate::editor::EditorPlugin;
 use crate::grid::GridPlugin;
 use crate::inventory::InventoryPlugin;
 use crate::loading::LoadingPlugin;
+use crate::overworld::OverworldPlugin;
 use crate::play::PlayPlugin;
 use crate::text::TextPlugin;
 use crate::title::TitlePlugin;
+use crate::tutorial::TutorialPlugin;
 use crate::util::Colors;
 use crate::veggie::VeggiePlugin;
 
@@ -27,6 +29,9 @@ mod editor;
 mod data;
 mod levels;
 mod play;
+mod tutorial;
+mod progress;
+mod overworld;
 
 // Dimensions in "zoomed" pixels (camera has a 2x factor)
 pub const WIDTH: f32 = 1280. / 2.;
@@ -37,6 +42,8 @@ enum GameState {
     Loading,
     Title,
     Puzzle,
+    Tutorial,
+    Overworld,
 }
 
 #[derive(Resource)]
@@ -68,10 +75,12 @@ fn main() {
         .add_plugin(TextPlugin)
         .add_plugin(LoadingPlugin)
         .add_plugin(TitlePlugin)
+        .add_plugin(OverworldPlugin)
         .add_plugin(PlayPlugin)
         .add_plugin(GridPlugin)
         .add_plugin(EditorPlugin)
         .add_plugin(InventoryPlugin)
+        .add_plugin(TutorialPlugin)
         .add_startup_system(init)
         .insert_resource(BlockInput(false))
         .run();
