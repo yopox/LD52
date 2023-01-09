@@ -106,8 +106,7 @@ fn setup(
         (Slot::Level(9), 3),
         (Slot::Level(10), 3),
         (Slot::Level(11), 3),
-        (Slot::Level(12), 3),
-        (Slot::Level(13), 5),
+        (Slot::Level(12), 5),
     ] {
         let completed = match slot {
             Slot::Level(n) => progress.finished_levels.contains(&n),
