@@ -1,8 +1,15 @@
+use arboard::Clipboard;
 use bevy::prelude::*;
 use rand::random;
 use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, util, WIDTH};
+use crate::data::Decoder;
+use crate::editor::InEditor;
+use crate::grid::CurrentPuzzle;
 use crate::loading::Textures;
+use crate::puzzle::Puzzle;
+use crate::text::{ButtonClick, spawn_text, TextButtonId};
+use crate::util::Colors;
 use crate::veggie::{Expression, spawn_veggie, Veggie};
 
 pub struct TitlePlugin;
@@ -72,7 +79,6 @@ fn setup(
         .insert(TitleUI);
 
     // Veggies
-
     for (v, x, y, e) in get_combination((random::<f32>() * 6.) as u8) {
         let id = spawn_veggie(
             &mut commands,
@@ -86,9 +92,64 @@ fn setup(
             .entity(id)
             .insert(TitleUI);
     }
+
+    // Buttons
+    for (text, x, y, button) in [
+        ("---level-----\n------list---".to_string(), WIDTH / 2. - 8. * 5.5, 128. + 16., TextButtonId::Title(0)),
+        ("--load from--\n--clipboard--".to_string(), WIDTH / 2. - 8. * 5.5, 128. - 16., TextButtonId::Title(1)),
+        ("---level-----\n----editor---".to_string(), WIDTH / 2. - 8. * 5.5, 128. - 48., TextButtonId::Title(2)),
+    ] {
+        let id = spawn_text(
+            &mut commands,
+            &textures,
+            Vec3::new(x, y, util::z::VEG_UI),
+            &text,
+            Colors::DarkRed.get(),
+            Colors::Beige.get(),
+        );
+
+        commands
+            .entity(id)
+            .insert(button)
+            .insert(TitleUI);
+    }
 }
 
-fn update() {}
+fn update(
+    mut commands: Commands,
+    mut clicked: EventReader<ButtonClick>,
+    mut state: ResMut<State<GameState>>,
+    mut in_editor: ResMut<InEditor>,
+) {
+    for ButtonClick(id) in clicked.iter() {
+        match *id {
+            TextButtonId::Title(n) => match n {
+                0 => {
+                    in_editor.0 = false;
+                    state.set(GameState::Puzzle).unwrap_or_default();
+                },
+                1 => {
+                    if let Ok(mut clipboard) = Clipboard::new() {
+                        if let Ok(text) = clipboard.get_text() {
+                            if let Some(mut decoded) = Decoder::decode_puzzle(text) {
+                                decoded.placed.clear();
+                                commands.insert_resource(CurrentPuzzle(Some(decoded)));
+                                in_editor.0 = false;
+                                state.set(GameState::Puzzle).unwrap_or_default();
+                            }
+                        }
+                    }
+                },
+                _ => {
+                    in_editor.0 = true;
+                    commands.insert_resource(CurrentPuzzle(Some(Puzzle::default())));
+                    state.set(GameState::Puzzle).unwrap_or_default();
+                },
+            },
+            _ => {}
+        }
+    }
+}
 
 fn cleanup(
     mut commands: Commands,

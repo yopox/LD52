@@ -43,18 +43,8 @@ pub struct GridChanged;
 pub struct GridVeggie(pub Veggie, pub (i8, i8), pub (bool, bool));
 
 fn setup(
-    mut puzzle: ResMut<CurrentPuzzle>,
     mut display_level: EventWriter<DisplayLevel>,
 ) {
-    // TODO: Load real level
-    puzzle.0 = Some(Puzzle {
-        author: "yopox".to_string(),
-        size: (10, 7),
-        veggies: HashMap::new(),
-        tiles: HashMap::new(),
-        placed: HashMap::new(),
-    });
-
     display_level.send(DisplayLevel);
 }
 

@@ -113,6 +113,7 @@ pub enum TextButtonId {
     Export,
     Import,
     Exit,
+    Title(u8),
 }
 
 pub struct ButtonClick(pub TextButtonId);

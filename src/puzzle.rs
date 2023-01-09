@@ -1,5 +1,6 @@
 use bevy::utils::HashMap;
 use strum::{EnumIter};
+use crate::data::Decoder;
 use crate::editor::InEditor;
 use crate::veggie::Veggie;
 
@@ -9,6 +10,18 @@ pub struct Puzzle {
     pub veggies: HashMap<Veggie, u8>,
     pub tiles: HashMap<(i8, i8), Tile>,
     pub placed: HashMap<(i8, i8), Veggie>,
+}
+
+impl Default for Puzzle {
+    fn default() -> Self {
+        Puzzle {
+            author: "".to_string(),
+            size: (5, 3),
+            veggies: HashMap::new(),
+            tiles: HashMap::new(),
+            placed: HashMap::new(),
+        }
+    }
 }
 
 pub const MAX_W: i8 = 10;
