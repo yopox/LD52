@@ -8,6 +8,7 @@ use crate::editor::EditorPlugin;
 use crate::grid::GridPlugin;
 use crate::inventory::InventoryPlugin;
 use crate::loading::LoadingPlugin;
+use crate::play::PlayPlugin;
 use crate::text::TextPlugin;
 use crate::title::TitlePlugin;
 use crate::util::Colors;
@@ -25,6 +26,7 @@ mod text;
 mod editor;
 mod data;
 mod levels;
+mod play;
 
 // Dimensions in "zoomed" pixels (camera has a 2x factor)
 pub const WIDTH: f32 = 1280. / 2.;
@@ -63,6 +65,7 @@ fn main() {
         .add_plugin(TextPlugin)
         .add_plugin(LoadingPlugin)
         .add_plugin(TitlePlugin)
+        .add_plugin(PlayPlugin)
         .add_plugin(GridPlugin)
         .add_plugin(EditorPlugin)
         .add_plugin(InventoryPlugin)
