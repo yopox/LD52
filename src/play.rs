@@ -1,9 +1,12 @@
 use bevy::prelude::*;
+use bevy_pkv::PkvStore;
 use bevy_tweening::Animator;
 
 use crate::{BlockInput, GameState, grid, HEIGHT, text, tween, util, WIDTH};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged};
 use crate::loading::Textures;
+use crate::overworld::{CurrentSlot, Slot};
+use crate::progress::{get_progress, set_progress};
 use crate::text::{ButtonClick, TextButtonId};
 use crate::util::Colors;
 
@@ -115,6 +118,8 @@ fn check_finished(
     mut changed: EventReader<GridChanged>,
     puzzle: Res<CurrentPuzzle>,
     mut block_input: ResMut<BlockInput>,
+    slot: Option<Res<CurrentSlot>>,
+    mut pkv: ResMut<PkvStore>,
 ) {
     if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_ref().unwrap();
@@ -123,7 +128,17 @@ fn check_finished(
         if puzzle.veggies.iter().all(|v| puzzle.remaining_veggie(v.0, false) == 0)
             && puzzle.is_valid().is_ok() {
             block_input.0 = true;
-            commands.insert_resource(WinAnimation { n: 0, frame: 0 })
+            commands.insert_resource(WinAnimation { n: 0, frame: 0 });
+
+            if let Some(s) = &slot {
+                let mut progress = get_progress(pkv.as_ref());
+                match s.0 {
+                    Slot::Level(n) => { progress.finished_levels.insert(n); },
+                    Slot::Custom(n) => { progress.finished_custom.insert(n); },
+                    _ => {},
+                };
+                set_progress(pkv.as_mut(), &progress);
+            }
         }
     }
 }

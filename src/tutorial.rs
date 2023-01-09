@@ -21,7 +21,7 @@ fn setup(
     mut commands: Commands,
     pkv: Res<PkvStore>,
 ) {
-    let progress = progress::get_progress(&pkv);
+    let progress = progress::get_progress(pkv.as_ref());
 }
 
 fn update() {}

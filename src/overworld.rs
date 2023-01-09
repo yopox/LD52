@@ -28,6 +28,9 @@ impl Plugin for OverworldPlugin {
 #[derive(Component)]
 struct OverworldUI;
 
+#[derive(Resource)]
+pub struct CurrentSlot(pub Slot);
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Slot {
     Level(usize),
@@ -51,7 +54,7 @@ fn setup(
     textures: Res<Textures>,
     pkv: Res<PkvStore>,
 ) {
-    let progress = get_progress(&pkv);
+    let progress = get_progress(pkv.as_ref());
 
     let id = util::frame(
         &mut commands, &textures,
@@ -143,6 +146,7 @@ fn setup(
 }
 
 fn click_on_button(
+    mut commands: Commands,
     mut clicked: EventReader<ButtonClick>,
     mut state: ResMut<State<GameState>>,
     mut current_puzzle: ResMut<CurrentPuzzle>,
@@ -154,6 +158,7 @@ fn click_on_button(
                     if let Some(mut puzzle) = Decoder::decode_puzzle(levels::LEVELS[n].to_string()) {
                         puzzle.prepare();
                         current_puzzle.as_mut().0 = Some(puzzle);
+                        commands.insert_resource(CurrentSlot(slot));
                         state.push(GameState::Play).unwrap();
                     }
                 }
