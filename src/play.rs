@@ -43,6 +43,7 @@ fn display(
     textures: Res<Textures>,
     puzzle: Res<CurrentPuzzle>,
     mut events: EventReader<DisplayLevel>,
+    slot: Option<Res<CurrentSlot>>,
 ) {
     if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_ref().unwrap();
@@ -63,11 +64,18 @@ fn display(
         commands.entity(id).insert(PlayUI);
 
         // Level number
+        let text = match slot {
+            Some(s) => match s.0 {
+                Slot::Level(n) => format!("level\n#{:0>2}", n + 1),
+                _ => "".to_string(),
+            },
+            _ => "".to_string(),
+        };
         let text_x = x + 8.;
         let id = text::spawn_text(
             &mut commands, &textures,
             Vec3::new(text_x, y + 10. * 8., util::z::VEG_UI),
-            &format!("level\n#01"),
+            if text.is_empty() { "custom\nlevel" } else { &text },
             Colors::Beige, Colors::DarkRed,
         );
         commands.entity(id).insert(PlayUI);
