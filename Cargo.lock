@@ -19,6 +19,7 @@ dependencies = [
  "futures",
  "image",
  "rand",
+ "serde",
  "strum",
  "web-sys",
  "winit",

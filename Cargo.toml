@@ -21,6 +21,7 @@ rand = { version = "0.8.5", features = ["alloc"]}
 bevy_pkv = { version = "0.6" }
 base91 = { version = "0.1.0" }
 strum = { version = "0.24.1", features = ["derive"] }
+serde = "1.0.152"
 
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.27", default-features = false }
