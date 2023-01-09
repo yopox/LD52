@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_pkv::PkvStore;
 
-use crate::{GameState, levels, text, util};
+use crate::{GameState, levels, text, util, WIDTH};
 use crate::data::Decoder;
 use crate::grid::CurrentPuzzle;
 use crate::loading::Textures;
@@ -74,13 +74,13 @@ fn setup(
 
     let id = util::frame(
         &mut commands, &textures,
-        48., 256. - 80., util::z::VEG_UI_BG,
+        64., 256. - 80., util::z::VEG_UI_BG,
         34, 14,
         Colors::DarkRed, Colors::Beige,
     );
     commands.entity(id).insert(OverworldUI);
 
-    let mut tile_x = 8;
+    let mut tile_x = 10;
     let mut tile_y = 32;
     for (slot, arrow) in [
         (Slot::Tutorial(0), 3),
@@ -143,6 +143,24 @@ fn setup(
             tile_y += dy;
         }
     }
+
+    let id = util::frame(
+        &mut commands, &textures,
+        WIDTH - 120., 24., util::z::VEG_UI_BG,
+        11, 3,
+        Colors::DarkRed, Colors::Beige
+    );
+    commands.entity(id).insert(OverworldUI);
+
+    let id = text::spawn_text(
+        &mut commands, &textures,
+        Vec3::new(WIDTH - 112., 40., util::z::VEG_UI),
+        &"         \n- leave -\n         ",
+        Colors::Beige, Colors::DarkRed,
+    );
+    commands.entity(id)
+        .insert(TextButtonId::Exit)
+        .insert(OverworldUI);
 }
 
 fn click_on_button(
