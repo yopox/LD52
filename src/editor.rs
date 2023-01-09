@@ -136,7 +136,7 @@ fn display_editor(
             &mut commands,
             &textures,
             Vec3::new(WIDTH - 96., 62. + 16., util::z::VEG_UI),
-            &puzzle.author,
+            if puzzle.author.is_empty() { "type name" } else { &puzzle.author },
             Colors::Beige.get(),
             Colors::DarkRed.get(),
         );
