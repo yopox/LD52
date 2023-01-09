@@ -175,11 +175,15 @@ fn click_on_button(
             TextButtonId::Overworld(slot) => match slot {
                 Slot::Level(n) => {
                     if let Some(mut puzzle) = Decoder::decode_puzzle(levels::LEVELS[n].to_string()) {
+                        commands.insert_resource(CurrentSlot(slot));
                         puzzle.prepare();
                         current_puzzle.as_mut().0 = Some(puzzle);
-                        commands.insert_resource(CurrentSlot(slot));
-                        state.push(GameState::Play).unwrap();
+                        state.set(GameState::Play).unwrap();
                     }
+                }
+                Slot::Tutorial(_) => {
+                    commands.insert_resource(CurrentSlot(slot));
+                    state.set(GameState::Tutorial).unwrap();
                 }
                 _ => {}
             }

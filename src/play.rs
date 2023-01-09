@@ -187,7 +187,7 @@ fn win_animation(
         if animation.frame > 20 {
             commands.remove_resource::<WinAnimation>();
             block_input.0 = false;
-            state.pop().unwrap_or_default();
+            state.set(GameState::Overworld).unwrap();
             return;
         }
     } else if animation.frame == 15 {

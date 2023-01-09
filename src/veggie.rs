@@ -93,7 +93,7 @@ fn update_faces(
 #[derive(Component)]
 pub struct Face;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum Expression {
     Neutral,
     Surprised,

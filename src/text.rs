@@ -125,6 +125,7 @@ pub enum TextButtonId {
     Exit,
     Title(u8),
     Overworld(Slot),
+    Tutorial(bool),
 }
 
 pub struct ButtonClick(pub TextButtonId);
