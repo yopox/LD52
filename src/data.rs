@@ -14,7 +14,18 @@ pub struct Encoder;
 
 impl Encoder {
     pub fn encode_puzzle(puzzle: &Puzzle) -> Option<String> {
-        if puzzle.is_valid().is_err() { return None }
+
+        match puzzle.is_valid() {
+            Err(e) => {
+                #[cfg(target_arch = "wasm32")]
+                if let Some(window) = web_sys::window() {
+                    window.alert_with_message(&format!("Can't export level: {}", e));
+                }
+                return None;
+            },
+            _ => {},
+        }
+
         let mut data = Vec::new();
         for (i, c) in puzzle.author.chars().enumerate() {
             if i > 9 { continue; }
