@@ -18,7 +18,7 @@ impl Plugin for InternalAudioPlugin {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum BGM {
     Title,
     Editor,
@@ -64,17 +64,27 @@ pub struct PlayBgmEvent(pub BGM);
 
 pub struct PlaySfxEvent(pub SFX);
 
+#[derive(Resource)]
+struct CurrentBGM(BGM);
+
 fn update_bgm(
     mut bgm_events: EventReader<PlayBgmEvent>,
     mut sfx_events: EventReader<PlaySfxEvent>,
     audio_assets: Option<Res<AudioAssets>>,
     bgm_channel: Res<AudioChannel<BgmChannel>>,
     sfx_channel: Res<AudioChannel<SfxChannel>>,
+    mut commands: Commands,
+    current: Option<Res<CurrentBGM>>,
 ) {
     if audio_assets.is_none() { return; }
 
     // Play BGMs
     for PlayBgmEvent(bgm) in bgm_events.iter() {
+        if let Some(c) = current {
+            if c.0 == *bgm { return; }
+        }
+
+        commands.insert_resource(CurrentBGM(*bgm));
         bgm_channel.stop();
         bgm_channel.set_volume(0.4);
         bgm_channel
