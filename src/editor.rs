@@ -114,8 +114,8 @@ fn display_editor(
                 &textures,
                 Vec3::new(x, y, util::z::VEG_UI),
                 text,
-                bg.get(),
-                fg.get(),
+                bg,
+                fg,
             );
 
             commands
@@ -129,8 +129,8 @@ fn display_editor(
             &textures,
             Vec3::new(WIDTH - 96., 62. + 40., util::z::VEG_UI),
             "author:",
-            Colors::Beige.get(),
-            Colors::DarkRed.get(),
+            Colors::Beige,
+            Colors::DarkRed,
         );
         commands.entity(id).insert(EditorUI);
 
@@ -139,8 +139,8 @@ fn display_editor(
             &textures,
             Vec3::new(WIDTH - 96., 62. + 32., util::z::VEG_UI),
             if puzzle.author.is_empty() { "type name" } else { &puzzle.author },
-            Colors::Beige.get(),
-            Colors::DarkRed.get(),
+            Colors::Beige,
+            Colors::DarkRed,
         );
         commands
             .entity(id)

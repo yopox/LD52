@@ -55,7 +55,7 @@ fn display(
             &mut commands, &textures,
             Vec3::new(text_x, y + 10. * 8., util::z::VEG_UI),
             &format!("level\n#01"),
-            Colors::Beige.get(), Colors::DarkRed.get(),
+            Colors::Beige, Colors::DarkRed,
         );
         commands.entity(id).insert(PlayUI);
 
@@ -64,7 +64,7 @@ fn display(
             &mut commands, &textures,
             Vec3::new(text_x, y + 7. * 8., util::z::VEG_UI),
             &format!("by:\n{}", if puzzle.author.is_empty() { "unknown" } else { &puzzle.author }),
-            Colors::Beige.get(), Colors::DarkRed.get(),
+            Colors::Beige, Colors::DarkRed,
         );
         commands.entity(id).insert(PlayUI);
 
@@ -81,7 +81,7 @@ fn display(
             &mut commands, &textures,
             Vec3::new(text_x, y + 16., util::z::VEG_UI),
             &"         \n- leave -\n         ",
-            Colors::Beige.get(), Colors::DarkRed.get(),
+            Colors::Beige, Colors::DarkRed,
         );
         commands.entity(id)
             .insert(PlayUI)

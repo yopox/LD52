@@ -126,8 +126,8 @@ fn setup(
             &textures,
             Vec3::new(x, y, util::z::TITLE_BUTTONS),
             &text,
-            Colors::Beige.get(),
-            Colors::DarkRed.get(),
+            Colors::Beige,
+            Colors::DarkRed,
         );
 
         commands

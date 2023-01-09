@@ -1,9 +1,12 @@
 use std::ops::Add;
+
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
+
 use crate::loading::Textures;
-use crate::util::collides;
+use crate::overworld::Slot;
+use crate::util::{collides, Colors};
 
 pub struct TextPlugin;
 
@@ -29,8 +32,8 @@ pub fn spawn_text<'w, 's, 'a>(
     textures: &Res<Textures>,
     position: Vec3,
     text: &str,
-    bg: Color,
-    fg: Color,
+    bg: Colors,
+    fg: Colors,
 ) -> Entity {
     let lines = cut_str(text);
     commands
@@ -46,8 +49,8 @@ pub fn spawn_text<'w, 's, 'a>(
                     parent
                         .spawn(TextModeSpriteSheetBundle {
                             sprite: TextModeTextureAtlasSprite {
-                                bg,
-                                fg,
+                                bg: bg.get(),
+                                fg: fg.get(),
                                 index: char_to_index(c),
                                 anchor: Anchor::BottomLeft,
                                 ..Default::default()
