@@ -1,4 +1,7 @@
+use std::u8;
 use bevy::prelude::*;
+use bevy::sprite::Anchor;
+use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
 use rand::random;
 use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, util, WIDTH};
@@ -8,7 +11,7 @@ use crate::grid::CurrentPuzzle;
 use crate::loading::Textures;
 use crate::puzzle::Puzzle;
 use crate::text::{ButtonClick, spawn_text, TextButtonId};
-use crate::util::Colors;
+use crate::util::{Colors, text_mode_bundle};
 use crate::veggie::{Expression, spawn_veggie, Veggie};
 
 pub struct TitlePlugin;
@@ -92,29 +95,148 @@ fn setup(
             .insert(TitleUI);
     }
 
+    // Buttons frame
+    commands
+        .spawn(TextModeSpriteSheetBundle {
+            sprite: TextModeTextureAtlasSprite {
+                bg: Colors::Beige.get(),
+                fg: Colors::DarkRed.get(),
+                index: 0,
+                anchor: Anchor::BottomLeft,
+                ..Default::default()
+            },
+            transform: Transform {
+                translation: Vec3::new(WIDTH / 2. - 8. * 7.5, 116., util::z::TITLE_BUTTONS_BG),
+                scale: Vec3::new(17., 13., 1.),
+                ..Default::default()
+            },
+            texture_atlas: textures.mrmotext.clone(),
+            ..Default::default()
+        })
+        .insert(TitleUI);
+
+    for (x, y, i) in [
+        (WIDTH / 2. - 8. * 7.5, 116. + 12. * 8., 6 * 32 + 30),
+        (WIDTH / 2. + 8. * 8.5, 116. + 12. * 8., 6 * 32 + 31),
+        (WIDTH / 2. - 8. * 7.5, 116., 7 * 32 + 30),
+        (WIDTH / 2. + 8. * 8.5, 116., 7 * 32 + 31),
+    ] {
+        commands
+            .spawn(text_mode_bundle(
+                Colors::DarkRed, Colors::Beige, i,
+                x, y, util::z::TITLE_BUTTONS,
+                textures.mrmotext.clone()
+            ))
+            .insert(TitleUI);
+    }
+
     // Buttons
     #[cfg(target_arch = "wasm32")]
         let load = "---load------\n-----level---";
     #[cfg(not(target_arch = "wasm32"))]
-        let load = "--load from--\n--clipboard--";
+        let load = "--load-from--\n--clipboard--";
 
     for (text, x, y, button) in [
-        ("---level-----\n------list---".to_string(), WIDTH / 2. - 8. * 5.5, 128. + 16., TextButtonId::Title(0)),
-        (load.to_string(), WIDTH / 2. - 8. * 5.5, 128. - 16., TextButtonId::Title(1)),
-        ("---level-----\n----editor---".to_string(), WIDTH / 2. - 8. * 5.5, 128. - 48., TextButtonId::Title(2)),
+        ("---level-----\n------list---".to_string(), WIDTH / 2. - 8. * 5.5, 184. + 16., TextButtonId::Title(0)),
+        (load.to_string(), WIDTH / 2. - 8. * 5.5, 184. - 16., TextButtonId::Title(1)),
+        ("---level-----\n----editor---".to_string(), WIDTH / 2. - 8. * 5.5, 184. - 48., TextButtonId::Title(2)),
     ] {
         let id = spawn_text(
             &mut commands,
             &textures,
-            Vec3::new(x, y, util::z::VEG_UI),
+            Vec3::new(x, y, util::z::TITLE_BUTTONS),
             &text,
-            Colors::DarkRed.get(),
             Colors::Beige.get(),
+            Colors::DarkRed.get(),
         );
 
         commands
             .entity(id)
             .insert(button)
+            .insert(TitleUI);
+    }
+
+    // All veggies
+    for (i, v) in Veggie::iter().enumerate() {
+        let id = spawn_veggie(
+            &mut commands,
+            &textures,
+            Vec3::new( (WIDTH - Veggie::iter().len() as f32 * 50.) / 2. + i as f32 * 50.,
+                       60. + match v { Veggie::Cherry => -1., Veggie::Garlic => -2., _ => 0. },
+                       util::z::VEGGIE),
+            &v,
+            match (random::<f32>() * 8.0) as u8 {
+                0 | 1 => Expression::Happy,
+                2 => Expression::Surprised,
+                3 => Expression::Neutral,
+                _ => Expression::Sad,
+            }
+        );
+
+        commands
+            .entity(id)
+            .insert(TitleUI);
+    }
+
+    // Partial grid
+    let w = (WIDTH - 10. * 40.) / 2.;
+    for y in 0..2 {
+        for x in 0..10 {
+            let tile_x = w + x as f32 * 40.;
+            let tile_y = -20. + y as f32 * 40.;
+
+            commands
+                .spawn(SpriteSheetBundle {
+                    sprite: TextureAtlasSprite {
+                        index: ((x + y) % 2) as usize,
+                        anchor: Anchor::BottomLeft,
+                        ..Default::default()
+                    },
+                    transform: Transform::from_xyz(tile_x, tile_y, util::z::TILE),
+                    texture_atlas: textures.tile.clone(),
+                    ..Default::default()
+                })
+                .insert(TitleUI);
+            }
+        }
+
+    // Corners
+    for (dx, dy, fx, fy, dx2, dy2, sx, sy, i) in [
+        (-8., 2. * 40., false, false, 8., 0., 10. * 5., 1., 1),
+        (10. * 40., 2. * 40., true, false, 0., -1. * 2. * 40., 1., 2. * 5., 2),
+        (-8., -8., false, true, 8., 0., 10. * 5., 1., 3),
+        (10. * 40., -8., true, true, -1. * 10. * 40. - 8., 8., 1., 2. * 5., 4),
+    ] {
+        commands
+            .spawn(SpriteSheetBundle {
+                sprite: TextureAtlasSprite {
+                    index: 0,
+                    flip_x: fx,
+                    flip_y: fy,
+                    anchor: Anchor::BottomLeft,
+                    ..Default::default()
+                },
+                transform: Transform::from_xyz(w + dx, -20. + dy, util::z::TILE),
+                texture_atlas: textures.border.clone(),
+                ..Default::default()
+            })
+            .insert(TitleUI);
+
+        commands
+            .spawn(SpriteSheetBundle {
+                sprite: TextureAtlasSprite {
+                    index: i,
+                    anchor: Anchor::BottomLeft,
+                    ..Default::default()
+                },
+                transform: Transform {
+                    translation: Vec3::new(w + dx + dx2, -20. + dy + dy2, util::z::TILE),
+                    scale: Vec3::new(sx, sy, 1.),
+                    ..Default::default()
+                },
+                texture_atlas: textures.border.clone(),
+                ..Default::default()
+            })
             .insert(TitleUI);
     }
 }

@@ -43,6 +43,9 @@ pub mod z {
     pub const VEG_UI: f32 = 3.;
     pub const COUNT_TEXT: f32 = 3.5;
     pub const VEG_DRAG: f32 = 4.;
+
+    pub const TITLE_BUTTONS_BG: f32 = 1.;
+    pub const TITLE_BUTTONS: f32 = 2.;
 }
 
 pub fn collides(
