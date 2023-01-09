@@ -223,6 +223,16 @@ fn setup(
             })
             .insert(TitleUI);
     }
+
+    let id = spawn_text(
+        &mut commands,
+        &textures,
+        Vec3::new(8., 24., util::z::TITLE_BUTTONS),
+        "a game by\nyopox &\njmen_balec",
+        Colors::DarkRed,
+        Colors::Beige,
+    );
+    commands.entity(id).insert(TitleUI);
 }
 
 fn update(
