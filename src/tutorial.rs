@@ -29,7 +29,7 @@ fn setup(
     slot: Option<Res<CurrentSlot>>,
 ) {
     let pages = [
-        ([
+        (vec![
              (Veggie::Strawberry, 3, 8, Expression::Happy),
              (Veggie::Strawberry, 7, 8, Expression::Happy),
              (Veggie::Strawberry, 5, 20, Expression::Sad),
@@ -42,6 +42,60 @@ fn setup(
          the first veggie is the strawberry:\n\
          it likes being adjacent (diagonals count)\n\
          to another strawberry."),
+        (vec![
+             (Veggie::Carrot, 2, 8, Expression::Happy),
+             (Veggie::Garlic, 8, 8, Expression::Happy),
+             (Veggie::Tomato, 5, 13, Expression::Happy),
+         ],
+         "\n\n\n\n\n\
+         tomatoes will be happy if they are adjacent\n\n\
+         to garlic or carrots!"),
+        (vec![
+             (Veggie::Garlic, 5, 12, Expression::Sad),
+         ],
+         "\n\n\n\n\n\
+         the garlic likes dry spots.\n\n\
+         it will become sad when adjacent to water!"),
+        (vec![
+             (Veggie::Carrot, 5, 12, Expression::Sad),
+         ],
+         "\n\n\n\n\n\
+         the carrot likes a clean soil.\n\n\
+         it will become sad when adjacent to water!"),
+        (vec![
+             (Veggie::Carrot, 2, 8, Expression::Sad),
+             (Veggie::Garlic, 8, 8, Expression::Sad),
+             (Veggie::Mint, 5, 13, Expression::Happy),
+         ],
+         "\n\n\n\n\n\
+         the mint has thick tangled roots.\n\n\
+         it will bother adjacent carrots and garlics\n\
+         and make them sad!"),
+        (vec![
+             (Veggie::Carrot, 2, 6, Expression::Sad),
+             (Veggie::Garlic, 8, 6, Expression::Sad),
+             (Veggie::Apple, 5, 11, Expression::Happy),
+             (Veggie::Strawberry, 2, 16, Expression::Sad),
+             (Veggie::Mint, 8, 16, Expression::Sad),
+         ],
+         "\n\n\n\n\n\
+         apple trees have a nice foliage.\n\n\
+         they will cast shadow and bother\n\
+         any adjacent veggie!"),
+        (vec![
+             (Veggie::Cherry, 2, 8, Expression::Happy),
+             (Veggie::Cherry, 8, 8, Expression::Sad),
+             (Veggie::Apple, 8, 16, Expression::Happy),
+         ],
+         "\n\n\
+         cherries like being in pairs: adjacent to\n\
+         exactly one other cherry.\n\n\
+         they are also very jealous and will become\n\
+         sad if there is an apple tree in\n\
+         their line or column!\n\n\
+         you know all the rules now, you can try the\n\
+         level editor and share your best levels in\n\
+         the comments :)"),
     ];
 
     if let Some(s) = slot {
@@ -98,7 +152,7 @@ fn setup(
         Colors::Beige, Colors::DarkRed,
     );
     commands.entity(id)
-        .insert(TextButtonId::Exit)
+        .insert(TextButtonId::LeaveTutorial)
         .insert(TutorialUI);
 }
 
@@ -112,8 +166,8 @@ fn click_on_button(
                 _ => {}
             }
 
-            TextButtonId::Exit => {
-                state.set(GameState::Overworld).unwrap();
+            TextButtonId::LeaveTutorial => {
+                state.pop().unwrap();
             }
 
             _ => {}

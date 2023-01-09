@@ -88,7 +88,7 @@ fn display(
         );
         commands.entity(id)
             .insert(PlayUI)
-            .insert(TextButtonId::Exit);
+            .insert(TextButtonId::LeaveLevel);
 
         break;
     }
@@ -104,7 +104,7 @@ fn click_on_button(
 
     for id in clicks.iter() {
         match id.0 {
-            TextButtonId::Exit => {
+            TextButtonId::LeaveLevel => {
                 state.pop().unwrap_or_default();
             }
 

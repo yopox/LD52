@@ -160,7 +160,7 @@ fn setup(
         Colors::Beige, Colors::DarkRed,
     );
     commands.entity(id)
-        .insert(TextButtonId::Exit)
+        .insert(TextButtonId::LeaveOverworld)
         .insert(OverworldUI);
 }
 
@@ -188,7 +188,7 @@ fn click_on_button(
                 _ => {}
             }
 
-            TextButtonId::Exit => {
+            TextButtonId::LeaveOverworld => {
                 state.pop().unwrap();
             }
 

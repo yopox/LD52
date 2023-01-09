@@ -107,7 +107,7 @@ fn display_editor(
             (WIDTH - 96., 62. + 16., save, Colors::Beige, Colors::DarkRed, TextButtonId::Export),
             (WIDTH - 96., 62. - 8., load, Colors::Beige, Colors::DarkRed, TextButtonId::Import),
             (WIDTH - 96., 62. - 32., "- clear -", Colors::Beige, Colors::DarkRed, TextButtonId::Clear),
-            (WIDTH - 96., 62. - 48., "- leave -", Colors::Beige, Colors::DarkRed, TextButtonId::Exit),
+            (WIDTH - 96., 62. - 48., "- leave -", Colors::Beige, Colors::DarkRed, TextButtonId::LeaveEditor),
         ] {
             let id = spawn_text(
                 &mut commands,
@@ -385,7 +385,7 @@ fn click_on_button(
                 display_level.send(DisplayLevel);
             }
 
-            TextButtonId::Exit => {
+            TextButtonId::LeaveEditor => {
                 state.pop().unwrap_or_default();
             }
 
