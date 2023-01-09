@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct Progress {
-    finished_levels: HashSet<usize>,
-    tutorial: HashSet<usize>,
-    custom_levels: Vec<String>,
+    pub finished_levels: HashSet<usize>,
+    pub tutorial: HashSet<u8>,
+    pub custom_levels: Vec<(String, bool)>,
 }
 
 const KEY: &'static str = "progress";

@@ -74,6 +74,12 @@ fn char_to_index(c: char) -> usize {
     return match c {
         'a'..='z' => 28 * 32 + 1 + c as u32 - 'a' as u32,
         '!'..='?' => 27 * 32 + 1 + c as u32 - '!' as u32,
+        'L' => 15 * 32 + 24,
+        'T' => 27 * 32 + 31,
+        'W' => 00 * 32 + 14,
+        'A' => 01 * 32 + 15,
+        'S' => 01 * 32 + 14,
+        'D' => 00 * 32 + 15,
         _ => 0,
     } as usize;
 }
@@ -118,6 +124,7 @@ pub enum TextButtonId {
     Clear,
     Exit,
     Title(u8),
+    Overworld(Slot),
 }
 
 pub struct ButtonClick(pub TextButtonId);

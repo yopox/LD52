@@ -235,7 +235,7 @@ fn update(
                 1 => {
                     if let Some(text) = data::read_level() {
                         if let Some(mut decoded) = Decoder::decode_puzzle(text) {
-                            decoded.placed.clear();
+                            decoded.prepare();
                             commands.insert_resource(CurrentPuzzle(Some(decoded)));
                             state.push(GameState::Play).unwrap();
                         }

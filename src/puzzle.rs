@@ -46,6 +46,10 @@ impl Puzzle {
         if !one_veg { return Err("The puzzle is empty!".to_string()); }
         return Ok(());
     }
+
+    pub fn prepare(&mut self) {
+        self.placed.clear();
+    }
 }
 
 #[derive(Eq, PartialEq, Clone, EnumIter)]
