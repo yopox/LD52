@@ -1,6 +1,13 @@
-# LD52
+# mad veggies
 
-## Veggies
+> It's winter, time to plan our future garden to get the best harvest possible!
+
+## how to play
+
+- **Level selection**: Click on `?` for tutorials and `o` for levels.
+- **Puzzle**: Drag the veggies in the grid and find a solution to make them all happy!
+
+## veggies
 
 | Veggie                            | Constraints                                                                                                   |
 |-----------------------------------|---------------------------------------------------------------------------------------------------------------|
@@ -12,7 +19,15 @@
 | ![Tomato](promo/veggies2.png)     | - **protected:** Loves being next to garlic or carrots                                                        |
 | ![Cherry](promo/veggies5.png)     | - **pairs:** Loves being next to exactly one cherry<br/>- **alone:** Hates apple trees in its line and column |
 
+## team
+
+- [yopox](https://mstdn.social/@yopox): code, graphics, levels
+- [jmen_balec](https://soundcloud.com/jmen_balec): music, sounds effects
+
+
 ## Build, Run
+
+`mrmotext` tileset is required as well as the crate `bevy_text_mode`.
 
 ### Run locally
 
