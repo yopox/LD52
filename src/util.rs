@@ -79,7 +79,7 @@ pub fn text_mode_bundle(
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub fn read_clipboard() -> Option<String> {
+pub fn read_level() -> Option<String> {
     match cli_clipboard::get_contents() {
         Ok(s) => Some(s),
         Err(_) => None,
@@ -87,12 +87,12 @@ pub fn read_clipboard() -> Option<String> {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub fn write_clipboard(s: String) {
+pub fn write_level(s: String) {
     cli_clipboard::set_contents(s).unwrap_or_default();
 }
 
 #[cfg(target_arch = "wasm32")]
-pub fn read_clipboard() -> Option<String> {
+pub fn read_level() -> Option<String> {
     if let Some(window) = web_sys::window() {
         let navigator = window.navigator();
         match window.prompt_with_message("Enter level code:") {
@@ -104,7 +104,7 @@ pub fn read_clipboard() -> Option<String> {
 }
 
 #[cfg(target_arch = "wasm32")]
-pub fn write_clipboard(s: String) {
+pub fn write_level(s: String) {
     if let Some(window) = web_sys::window() {
         window.alert_with_message(&format!("Your level code is: {}", s));
     }

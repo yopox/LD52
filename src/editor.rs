@@ -374,12 +374,12 @@ fn click_on_button(
             }
             TextButtonId::Export => {
                 if let Some(text) = Encoder::encode_puzzle(&puzzle) {
-                    util::write_clipboard(text);
+                    util::write_level(text);
                 }
             }
 
             TextButtonId::Import => {
-                if let Some(text) = util::read_clipboard() {
+                if let Some(text) = util::read_level() {
                     if let Some(decoded) = Decoder::decode_puzzle(text) {
                         commands.insert_resource(CurrentPuzzle(Some(decoded)));
                         display_level.send(DisplayLevel);

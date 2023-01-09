@@ -133,7 +133,7 @@ fn update(
                     state.set(GameState::Puzzle).unwrap_or_default();
                 },
                 1 => {
-                    if let Some(text) = util::read_clipboard() {
+                    if let Some(text) = util::read_level() {
                         if let Some(mut decoded) = Decoder::decode_puzzle(text) {
                             decoded.placed.clear();
                             commands.insert_resource(CurrentPuzzle(Some(decoded)));
