@@ -9,7 +9,7 @@ use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
 use crate::data::{Decoder, Encoder};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridTile, PreviousPos};
 use crate::loading::Textures;
-use crate::puzzle::Tile;
+use crate::puzzle::{Puzzle, Tile};
 use crate::text::{ButtonClick, spawn_text, TextButtonId};
 use crate::util::{Colors, text_mode_bundle};
 
@@ -103,8 +103,9 @@ fn display_editor(
             (grid_x + 12., grid_y + grid_h + 8., "-", Colors::Red, Colors::Beige, TextButtonId::ExpandShrink(false, true)),
             (grid_x + grid_w + 8., grid_y + grid_h - 8., "+", Colors::Green, Colors::Beige, TextButtonId::ExpandShrink(true, false)),
             (grid_x + grid_w + 8., grid_y + grid_h - 20., "-", Colors::Red, Colors::Beige, TextButtonId::ExpandShrink(false, false)),
-            (WIDTH - 96., 62., save, Colors::Beige, Colors::DarkRed, TextButtonId::Export),
-            (WIDTH - 96., 62. - 24., load, Colors::Beige, Colors::DarkRed, TextButtonId::Import),
+            (WIDTH - 96., 62. + 16., save, Colors::Beige, Colors::DarkRed, TextButtonId::Export),
+            (WIDTH - 96., 62. - 8., load, Colors::Beige, Colors::DarkRed, TextButtonId::Import),
+            (WIDTH - 96., 62. - 32., "- clear -", Colors::Beige, Colors::DarkRed, TextButtonId::Clear),
             (WIDTH - 96., 62. - 48., "- leave -", Colors::Beige, Colors::DarkRed, TextButtonId::Exit),
         ] {
             let id = spawn_text(
@@ -125,7 +126,7 @@ fn display_editor(
         let id = spawn_text(
             &mut commands,
             &textures,
-            Vec3::new(WIDTH - 96., 62. + 24., util::z::VEG_UI),
+            Vec3::new(WIDTH - 96., 62. + 40., util::z::VEG_UI),
             "author:",
             Colors::Beige.get(),
             Colors::DarkRed.get(),
@@ -135,7 +136,7 @@ fn display_editor(
         let id = spawn_text(
             &mut commands,
             &textures,
-            Vec3::new(WIDTH - 96., 62. + 16., util::z::VEG_UI),
+            Vec3::new(WIDTH - 96., 62. + 32., util::z::VEG_UI),
             if puzzle.author.is_empty() { "type name" } else { &puzzle.author },
             Colors::Beige.get(),
             Colors::DarkRed.get(),
@@ -151,7 +152,7 @@ fn display_editor(
                     Colors::DarkRed,
                     Colors::Beige,
                     9 * 32 + 25,
-                    WIDTH - 104. + 8. * i as f32, 62. + 40., util::z::VEG_UI,
+                    WIDTH - 104. + 8. * i as f32, 62. + 56., util::z::VEG_UI,
                     textures.mrmotext.clone(),
                 ))
                 .insert(EditorUI);
@@ -168,7 +169,7 @@ fn display_editor(
                 texture_atlas: textures.mrmotext.clone(),
                 transform: Transform {
                     translation: Vec3::new(WIDTH - 104., 0., 0.),
-                    scale: Vec3::new(11., 13., 1.),
+                    scale: Vec3::new(11., 15., 1.),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -385,6 +386,11 @@ fn click_on_button(
                         display_level.send(DisplayLevel);
                     }
                 }
+            }
+
+            TextButtonId::Clear => {
+                commands.insert_resource(CurrentPuzzle(Some(Puzzle::default())));
+                display_level.send(DisplayLevel);
             }
 
             TextButtonId::Exit => {

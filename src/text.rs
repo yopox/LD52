@@ -112,6 +112,7 @@ pub enum TextButtonId {
     ExpandShrink(bool, bool),
     Export,
     Import,
+    Clear,
     Exit,
     Title(u8),
 }
