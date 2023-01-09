@@ -1,6 +1,7 @@
 // let_(thinking) = rof if(shrink)
 
 use bevy::prelude::*;
+use bevy_pkv::PkvStore;
 use bevy_text_mode::{TextModePlugin, TextModeTextureAtlasSprite};
 use bevy_tweening::{component_animator_system, TweeningPlugin};
 
@@ -37,11 +38,12 @@ mod overworld;
 pub const WIDTH: f32 = 1280. / 2.;
 pub const HEIGHT: f32 = 720. / 2.;
 
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash, Copy)]
 enum GameState {
     Loading,
     Title,
-    Puzzle,
+    Play,
+    Editor,
     Tutorial,
     Overworld,
 }
@@ -83,7 +85,8 @@ fn main() {
         .add_plugin(TutorialPlugin)
         .add_startup_system(init)
         .insert_resource(BlockInput(false))
-        .run();
+        .insert_resource(PkvStore::new("yopox.ld52", "mad_veggies"))
+    .run();
 }
 
 fn init(mut commands: Commands) {

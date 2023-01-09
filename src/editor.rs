@@ -20,8 +20,7 @@ pub struct EditorPlugin;
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
         app
-            .insert_resource(InEditor(true))
-            .add_system_set(SystemSet::on_update(GameState::Puzzle)
+            .add_system_set(SystemSet::on_update(GameState::Editor)
                 .with_system(display_editor)
                 .with_system(handle_click)
                 .with_system(handle_drop)
@@ -29,12 +28,9 @@ impl Plugin for EditorPlugin {
                 .with_system(update_author)
                 .with_system(click_on_button.after("logic"))
             )
-            .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
+            .add_system_set(SystemSet::on_exit(GameState::Editor).with_system(cleanup));
     }
 }
-
-#[derive(Resource)]
-pub struct InEditor(pub bool);
 
 #[derive(Component)]
 struct EditorUI;
@@ -48,13 +44,10 @@ struct AuthorName;
 fn display_editor(
     mut commands: Commands,
     textures: Res<Textures>,
-    in_editor: Res<InEditor>,
     puzzle: Res<CurrentPuzzle>,
     mut display_event: EventReader<DisplayLevel>,
     entities: Query<Entity, With<EditorUI>>,
 ) {
-    if !in_editor.0 { return; }
-
     if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_ref().unwrap();
 
@@ -198,10 +191,7 @@ fn handle_click(
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
     textures: Res<Textures>,
-    in_editor: Res<InEditor>,
 ) {
-    if !in_editor.0 { return; }
-
     if mouse.just_pressed(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
         if let Some(pos) = window.cursor_position() {
@@ -240,9 +230,7 @@ fn handle_drop(
     query: Query<(Entity, &DraggedTile, &Transform, Option<&PreviousPos>)>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut grid_changed: EventWriter<GridChanged>,
-    in_editor: Res<InEditor>,
 ) {
-    if !in_editor.0 { return; }
     if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_mut().unwrap();
 
@@ -312,9 +300,7 @@ fn handle_click_on_grid(
     windows: Res<Windows>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut grid_changed: EventWriter<GridChanged>,
-    in_editor: Res<InEditor>,
 ) {
-    if !in_editor.0 { return; }
     if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_mut().unwrap();
 
@@ -343,10 +329,8 @@ fn click_on_button(
     mut clicks: EventReader<ButtonClick>,
     mut current_puzzle: ResMut<CurrentPuzzle>,
     mut display_level: EventWriter<DisplayLevel>,
-    in_editor: Res<InEditor>,
     mut state: ResMut<State<GameState>>,
 ) {
-    if !in_editor.0 { return; }
     if current_puzzle.0.is_none() { return; }
     let mut puzzle = current_puzzle.0.as_mut().unwrap();
 
@@ -402,7 +386,7 @@ fn click_on_button(
             }
 
             TextButtonId::Exit => {
-                state.set(GameState::Title).unwrap_or_default();
+                state.pop().unwrap_or_default();
             }
 
             _ => {}
@@ -414,9 +398,7 @@ fn update_author(
     keyboard_input: Res<Input<KeyCode>>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut refresh: EventWriter<DisplayLevel>,
-    in_editor: Res<InEditor>,
 ) {
-    if !in_editor.0 { return; }
     for code in keyboard_input.get_just_pressed() {
         match get_char(code) {
             Some('<') => { puzzle.0.as_mut().unwrap().author.pop(); },

@@ -15,16 +15,20 @@ impl Plugin for GridPlugin {
             .insert_resource(CurrentPuzzle(None))
             .add_event::<DisplayLevel>()
             .add_event::<DestroyLevel>()
-            .add_event::<GridChanged>()
-            .add_system_set(SystemSet::on_enter(GameState::Puzzle)
-                .with_system(setup)
-            )
-            .add_system_set(SystemSet::on_update(GameState::Puzzle)
-                .with_system(update.before("logic"))
-                .with_system(display_level.label("logic"))
-                .with_system(handle_click.label("logic"))
-            )
-            .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
+            .add_event::<GridChanged>();
+
+
+        for state in [GameState::Play, GameState::Editor] {
+            app
+                .add_system_set(SystemSet::on_enter(state).with_system(setup))
+                .add_system_set(SystemSet::on_update(state)
+                    .with_system(update.before("logic"))
+                    .with_system(display_level.label("logic"))
+                    .with_system(handle_click.label("logic"))
+                )
+                .add_system_set(SystemSet::on_exit(state).with_system(cleanup))
+            ;
+        }
     }
 }
 
@@ -44,6 +48,7 @@ pub struct GridVeggie(pub Veggie, pub (i8, i8), pub (bool, bool));
 
 fn setup(
     mut display_level: EventWriter<DisplayLevel>,
+    mut state: ResMut<State<GameState>>,
 ) {
     display_level.send(DisplayLevel);
 }

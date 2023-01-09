@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use bevy_tweening::Animator;
 
 use crate::{BlockInput, GameState, grid, HEIGHT, text, tween, util, WIDTH};
-use crate::editor::InEditor;
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged};
 use crate::loading::Textures;
 use crate::text::{ButtonClick, TextButtonId};
@@ -13,13 +12,13 @@ pub struct PlayPlugin;
 impl Plugin for PlayPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_system_set(SystemSet::on_update(GameState::Puzzle)
+            .add_system_set(SystemSet::on_update(GameState::Play)
                 .with_system(display)
                 .with_system(click_on_button)
                 .with_system(check_finished)
                 .with_system(win_animation)
             )
-            .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
+            .add_system_set(SystemSet::on_exit(GameState::Play).with_system(cleanup));
     }
 }
 
@@ -31,9 +30,8 @@ fn display(
     textures: Res<Textures>,
     puzzle: Res<CurrentPuzzle>,
     mut events: EventReader<DisplayLevel>,
-    in_editor: Res<InEditor>,
 ) {
-    if puzzle.0.is_none() || in_editor.0 { return; }
+    if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_ref().unwrap();
 
     for _ in events.iter() {
@@ -96,16 +94,15 @@ fn display(
 
 fn click_on_button(
     mut clicks: EventReader<ButtonClick>,
-    in_editor: Res<InEditor>,
     mut state: ResMut<State<GameState>>,
     block_input: Res<BlockInput>,
 ) {
-    if in_editor.0 || block_input.0 { return; }
+    if block_input.0 { return; }
 
     for id in clicks.iter() {
         match id.0 {
             TextButtonId::Exit => {
-                state.set(GameState::Title).unwrap_or_default();
+                state.pop().unwrap_or_default();
             }
 
             _ => {}
@@ -117,14 +114,13 @@ fn check_finished(
     mut commands: Commands,
     mut changed: EventReader<GridChanged>,
     puzzle: Res<CurrentPuzzle>,
-    in_editor: Res<InEditor>,
     mut block_input: ResMut<BlockInput>,
 ) {
-    if puzzle.0.is_none() || in_editor.0 { return; }
+    if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_ref().unwrap();
 
     for _ in changed.iter() {
-        if puzzle.veggies.iter().all(|v| puzzle.remaining_veggie(v.0, &in_editor) == 0)
+        if puzzle.veggies.iter().all(|v| puzzle.remaining_veggie(v.0, false) == 0)
             && puzzle.is_valid().is_ok() {
             block_input.0 = true;
             commands.insert_resource(WinAnimation { n: 0, frame: 0 })
@@ -176,7 +172,7 @@ fn win_animation(
         if animation.frame > 40 {
             commands.remove_resource::<WinAnimation>();
             block_input.0 = false;
-            state.set(GameState::Title).unwrap_or_default();
+            state.pop().unwrap_or_default();
             return;
         }
     } else if animation.frame == 30 {

@@ -7,7 +7,6 @@ use strum::IntoEnumIterator;
 
 use crate::{data, GameState, HEIGHT, util, WIDTH};
 use crate::data::Decoder;
-use crate::editor::InEditor;
 use crate::grid::CurrentPuzzle;
 use crate::loading::Textures;
 use crate::puzzle::Puzzle;
@@ -21,8 +20,11 @@ impl Plugin for TitlePlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system_set(SystemSet::on_enter(GameState::Title).with_system(setup))
+            .add_system_set(SystemSet::on_resume(GameState::Title).with_system(setup))
             .add_system_set(SystemSet::on_update(GameState::Title).with_system(update))
-            .add_system_set(SystemSet::on_exit(GameState::Title).with_system(cleanup));
+            .add_system_set(SystemSet::on_exit(GameState::Title).with_system(cleanup))
+            .add_system_set(SystemSet::on_pause(GameState::Title).with_system(cleanup))
+        ;
     }
 }
 
@@ -223,29 +225,25 @@ fn update(
     mut commands: Commands,
     mut clicked: EventReader<ButtonClick>,
     mut state: ResMut<State<GameState>>,
-    mut in_editor: ResMut<InEditor>,
 ) {
     for ButtonClick(id) in clicked.iter() {
         match *id {
             TextButtonId::Title(n) => match n {
                 0 => {
-                    in_editor.0 = false;
-                    state.set(GameState::Puzzle).unwrap_or_default();
+                    state.push(GameState::Overworld).unwrap();
                 },
                 1 => {
                     if let Some(text) = data::read_level() {
                         if let Some(mut decoded) = Decoder::decode_puzzle(text) {
                             decoded.placed.clear();
                             commands.insert_resource(CurrentPuzzle(Some(decoded)));
-                            in_editor.0 = false;
-                            state.set(GameState::Puzzle).unwrap_or_default();
+                            state.push(GameState::Play).unwrap();
                         }
                     }
                 },
                 _ => {
-                    in_editor.0 = true;
                     commands.insert_resource(CurrentPuzzle(Some(Puzzle::default())));
-                    state.set(GameState::Puzzle).unwrap_or_default();
+                    state.push(GameState::Editor).unwrap();
                 },
             },
             _ => {}

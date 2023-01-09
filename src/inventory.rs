@@ -7,7 +7,7 @@ use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 
 use crate::{BlockInput, GameState, HEIGHT, util};
-use crate::editor::{DraggedTile, InEditor};
+use crate::editor::DraggedTile;
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridUI, GridVeggie, PreviousPos};
 use crate::loading::Textures;
 use crate::text::{ChangeText, spawn_text};
@@ -18,15 +18,17 @@ pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_system_set(SystemSet::on_update(GameState::Puzzle)
-                .with_system(display)
-                .with_system(update_counts)
-                .with_system(handle_click.label("logic"))
-                .with_system(update_dragged.label("logic"))
-                .with_system(handle_drop.label("logic"))
-            )
-            .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
+        for state in [GameState::Play, GameState::Editor] {
+            app
+                .add_system_set(SystemSet::on_update(state)
+                    .with_system(display)
+                    .with_system(update_counts)
+                    .with_system(handle_click.label("logic"))
+                    .with_system(update_dragged.label("logic"))
+                    .with_system(handle_drop.label("logic"))
+                )
+                .add_system_set(SystemSet::on_exit(state).with_system(cleanup));
+        }
     }
 }
 
@@ -44,11 +46,13 @@ fn display(
     mut event: EventReader<DisplayLevel>,
     puzzle: Res<CurrentPuzzle>,
     textures: Res<Textures>,
-    in_editor: Res<InEditor>,
+    state: Res<State<GameState>>,
 ) {
+    let in_editor = state.current() == &GameState::Editor;
+
     for _ in event.iter() {
         if let Some(puzzle) = &puzzle.0 {
-            let all_veggies = if in_editor.0 {
+            let all_veggies = if in_editor {
                 Veggie::iter().map(|v| (v, 99)).collect::<Vec<(Veggie, u8)>>()
             } else {
                 puzzle.veggies.iter().map(|(v, c)| (*v, *c)).collect::<Vec<(Veggie, u8)>>()
@@ -60,7 +64,7 @@ fn display(
                 let veg_e = spawn_veggie(
                     &mut commands,
                     &textures,
-                    Vec3::new(w + if in_editor.0 { 16. } else { 0. }, h + 48. * i as f32 + 4., util::z::VEG_UI),
+                    Vec3::new(w + if in_editor { 16. } else { 0. }, h + 48. * i as f32 + 4., util::z::VEG_UI),
                     veg,
                     Expression::Neutral,
                 );
@@ -69,7 +73,7 @@ fn display(
                     .insert(InventoryUI)
                     .insert(InventoryVeg(veg.clone()));
 
-                if !in_editor.0 {
+                if !in_editor {
                     let text = spawn_text(
                         &mut commands,
                         &textures,
@@ -106,14 +110,15 @@ fn update_counts(
     puzzle: Res<CurrentPuzzle>,
     mut grid_changed: EventReader<GridChanged>,
     mut change_text: EventWriter<ChangeText>,
-    in_editor: Res<InEditor>,
+    state: Res<State<GameState>>,
 ) {
+    let in_editor = state.current() == &GameState::Editor;
     if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_ref().unwrap();
 
     for _ in grid_changed.iter() {
         for (inv_count, e) in counts.iter() {
-            let available = puzzle.remaining_veggie(&inv_count.0, &in_editor);
+            let available = puzzle.remaining_veggie(&inv_count.0, in_editor);
             let text = format!("x{:0>2}", available);
             change_text.send(ChangeText(e, text));
         }
@@ -133,9 +138,10 @@ fn handle_click(
     windows: Res<Windows>,
     textures: Res<Textures>,
     puzzle: Res<CurrentPuzzle>,
-    in_editor: Res<InEditor>,
+    state: Res<State<GameState>>,
     block_input: Res<BlockInput>,
 ) {
+    let in_editor = state.current() == &GameState::Editor;
     if puzzle.0.is_none() || block_input.0 { return; }
     let puzzle = puzzle.0.as_ref().unwrap();
 
@@ -146,7 +152,7 @@ fn handle_click(
                 (t.translation.x + 20. - pos.x / 2.).abs() < 20.
                 && (t.translation.y + 20. - pos.y / 2.).abs() < 20.
             ).nth(0) {
-                if puzzle.remaining_veggie(&v.0, &in_editor) == 0 { return; }
+                if puzzle.remaining_veggie(&v.0, in_editor) == 0 { return; }
 
                 // Spawn a veggie
                 let veg_e = spawn_veggie(
