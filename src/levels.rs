@@ -20,7 +20,8 @@ pub const LEVELS: [&'static str; 20] = [
 
     "VCVWUED\"`M?()A(ZnnPj[B,WC",               // Str x2 + Tom + Carrot + Gar + Mint + Apple + Cherry x2
     "VCVWxdDGBDdL;FEMRt~Q\"Ii\"XMI%IYnJv(0AE",  // Water x5 + Apple x3 + Cherry x4 + Carrot x3
-    "",
+
+    "<SmsWax(wAdZS\"JM)EJB{Z]clBM",
     "",
     "",
     "",
