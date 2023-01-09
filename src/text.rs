@@ -118,7 +118,7 @@ pub enum TextButtonId {
 pub struct ButtonClick(pub TextButtonId);
 
 fn handle_click(
-    mut buttons: Query<(&Text, &mut Transform, &TextButtonId)>,
+    buttons: Query<(&Text, &Transform, &TextButtonId)>,
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
     mut ev: EventWriter<ButtonClick>,

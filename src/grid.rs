@@ -227,7 +227,7 @@ fn handle_click(
     mut grid_changed: EventWriter<GridChanged>,
 ) {
     if puzzle.0.is_none() { return; }
-    let mut puzzle = puzzle.0.as_mut().unwrap();
+    let puzzle = puzzle.0.as_mut().unwrap();
 
     if mouse.just_pressed(MouseButton::Left) {
         let window = windows.get_primary().unwrap();

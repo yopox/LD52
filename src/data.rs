@@ -1,4 +1,4 @@
-use bevy::log::{error, info};
+use bevy::log::error;
 use bevy::utils::HashMap;
 use crate::puzzle;
 use crate::puzzle::{Puzzle, Tile};

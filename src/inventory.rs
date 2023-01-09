@@ -127,7 +127,7 @@ fn handle_click(
     if mouse.just_pressed(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
         if let Some(pos) = window.cursor_position() {
-            if let Some((v, t)) = inventory.iter().filter(|(_, t)|
+            if let Some((v, _)) = inventory.iter().filter(|(_, t)|
                 (t.translation.x + 20. - pos.x / 2.).abs() < 20.
                 && (t.translation.y + 20. - pos.y / 2.).abs() < 20.
             ).nth(0) {
@@ -173,7 +173,7 @@ fn handle_drop(
     mut grid_changed: EventWriter<GridChanged>,
 ) {
     if puzzle.0.is_none() { return; }
-    let mut puzzle = puzzle.0.as_mut().unwrap();
+    let puzzle = puzzle.0.as_mut().unwrap();
 
     let animation_len = 1000;
 

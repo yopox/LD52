@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
+use bevy_text_mode::TextModeTextureAtlasSprite;
 use strum::EnumIter;
 use crate::loading::Textures;
-use crate::util::Colors;
+use crate::util::{Colors, text_mode_bundle};
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug, EnumIter, Hash, Component)]
 pub enum Veggie {
@@ -40,12 +40,19 @@ impl Veggie {
         }
     }
 
-    pub fn face_color(&self) -> Color {
+    pub fn face_bg(&self) -> Colors {
         match self {
-            Veggie::Strawberry | Veggie::Tomato | Veggie::Cherry => Colors::Red.get(),
-            Veggie::Apple | Veggie::Mint => Colors::Green.get(),
-            Veggie::Carrot => Colors::Orange.get(),
-            Veggie::Garlic => Colors::Grey.get()
+            Veggie::Strawberry | Veggie::Tomato | Veggie::Cherry => Colors::Red,
+            Veggie::Apple | Veggie::Mint => Colors::Green,
+            Veggie::Carrot => Colors::Orange,
+            Veggie::Garlic => Colors::Grey
+        }
+    }
+
+    pub fn face_fg(&self) -> Colors {
+        match self {
+            Veggie::Carrot | Veggie::Garlic => Colors::Black,
+            _ => Colors::Beige
         }
     }
 }
@@ -129,19 +136,13 @@ pub fn spawn_veggie<'w, 's, 'a>(
         .with_children(|parent| {
             veggie.faces().iter().for_each(|(x, y)| {
                 parent
-                    .spawn(TextModeSpriteSheetBundle {
-                        sprite: TextModeTextureAtlasSprite {
-                            bg: veggie.face_color(),
-                            fg: Colors::Black.get(),
-                            alpha: 1.,
-                            index: expression.index(),
-                            anchor: Anchor::BottomLeft,
-                            ..Default::default()
-                        },
-                        texture_atlas: textures.faces.clone(),
-                        transform: Transform::from_xyz(*x, *y, 0.0000001),
-                        ..Default::default()
-                    })
+                    .spawn(text_mode_bundle(
+                        veggie.face_bg(),
+                        veggie.face_fg(),
+                        expression.index(),
+                        *x, *y, 0.0000001,
+                        textures.faces.clone()
+                    ))
                     .insert(Face);
             });
         })

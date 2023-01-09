@@ -1,5 +1,5 @@
 use bevy::utils::HashMap;
-use strum::{EnumIter, IntoEnumIterator};
+use strum::{EnumIter};
 use crate::editor::InEditor;
 use crate::veggie::Veggie;
 

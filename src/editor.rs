@@ -185,7 +185,7 @@ fn handle_click(
     if mouse.just_pressed(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
         if let Some(pos) = window.cursor_position() {
-            if let Some((e, t)) = inventory.iter().filter(|(_, t)|
+            if let Some((e, _)) = inventory.iter().filter(|(_, t)|
                 (t.translation.x + 20. - pos.x / 2.).abs() < 20.
                     && (t.translation.y + 20. - pos.y / 2.).abs() < 20.
             ).nth(0) {
@@ -224,7 +224,7 @@ fn handle_drop(
 ) {
     if !in_editor.0 { return; }
     if puzzle.0.is_none() { return; }
-    let mut puzzle = puzzle.0.as_mut().unwrap();
+    let puzzle = puzzle.0.as_mut().unwrap();
 
     let animation_len = 1000;
 
@@ -296,7 +296,7 @@ fn handle_click_on_grid(
 ) {
     if !in_editor.0 { return; }
     if puzzle.0.is_none() { return; }
-    let mut puzzle = puzzle.0.as_mut().unwrap();
+    let puzzle = puzzle.0.as_mut().unwrap();
 
     if mouse.just_pressed(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
@@ -394,7 +394,7 @@ fn update_author(
         match get_char(code) {
             Some('<') => { puzzle.0.as_mut().unwrap().author.pop(); },
             Some(c) => {
-                let mut p = puzzle.0.as_mut().unwrap();
+                let p = puzzle.0.as_mut().unwrap();
                 if p.author.len() < 9 { p.author.push(c); }
             },
             None => { return; },
