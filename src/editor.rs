@@ -3,6 +3,7 @@ use arboard::Clipboard;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
 use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
@@ -11,7 +12,7 @@ use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridTile, PreviousPo
 use crate::loading::Textures;
 use crate::puzzle::Tile;
 use crate::text::{ButtonClick, spawn_text, TextButtonId};
-use crate::util::Colors;
+use crate::util::{Colors, text_mode_bundle};
 
 pub struct EditorPlugin;
 
@@ -62,7 +63,7 @@ fn display_editor(
         // Tiles on the right
         let tiles = Tile::iter().collect::<Vec<Tile>>();
 
-        let h = (HEIGHT - tiles.len() as f32 * 48.) / 2.;
+        let h = (HEIGHT - tiles.len() as f32 * 48.) / 2. + 32.;
         let w = WIDTH - 32. - 40.;
 
         for (i, tile) in Tile::iter().enumerate() {
@@ -91,9 +92,9 @@ fn display_editor(
             (grid_x + 12., grid_y + grid_h + 8., "-", Colors::Red, Colors::Beige, TextButtonId::ExpandShrink(false, true)),
             (grid_x + grid_w + 8., grid_y + grid_h - 8., "+", Colors::Green, Colors::Beige, TextButtonId::ExpandShrink(true, false)),
             (grid_x + grid_w + 8., grid_y + grid_h - 20., "-", Colors::Red, Colors::Beige, TextButtonId::ExpandShrink(false, false)),
-            (WIDTH - 96., 80., "save to  \nclipboard", Colors::DarkRed, Colors::Beige, TextButtonId::Export),
-            (WIDTH - 96., 80. - 24., "load from\nclipboard", Colors::DarkRed, Colors::Beige, TextButtonId::Import),
-            (WIDTH - 96., 80. - 48., "- leave -", Colors::DarkRed, Colors::Beige, TextButtonId::Exit),
+            (WIDTH - 96., 62., "save to  \nclipboard", Colors::Beige, Colors::DarkRed, TextButtonId::Export),
+            (WIDTH - 96., 62. - 24., "load from\nclipboard", Colors::Beige, Colors::DarkRed, TextButtonId::Import),
+            (WIDTH - 96., 62. - 48., "- leave -", Colors::Beige, Colors::DarkRed, TextButtonId::Exit),
         ] {
             let id = spawn_text(
                 &mut commands,
@@ -113,25 +114,55 @@ fn display_editor(
         let id = spawn_text(
             &mut commands,
             &textures,
-            Vec3::new(WIDTH - 96., 80. + 24., util::z::VEG_UI),
+            Vec3::new(WIDTH - 96., 62. + 24., util::z::VEG_UI),
             "author:",
-            Colors::DarkRed.get(),
             Colors::Beige.get(),
+            Colors::DarkRed.get(),
         );
         commands.entity(id).insert(EditorUI);
 
         let id = spawn_text(
             &mut commands,
             &textures,
-            Vec3::new(WIDTH - 96., 80. + 16., util::z::VEG_UI),
+            Vec3::new(WIDTH - 96., 62. + 16., util::z::VEG_UI),
             &puzzle.author,
-            Colors::DarkRed.get(),
             Colors::Beige.get(),
+            Colors::DarkRed.get(),
         );
         commands
             .entity(id)
             .insert(EditorUI)
             .insert(AuthorName);
+
+        for i in 0..11 {
+            commands
+                .spawn(text_mode_bundle(
+                    Colors::DarkRed,
+                    Colors::Beige,
+                    9 * 32 + 25,
+                    WIDTH - 104. + 8. * i as f32, 62. + 40., util::z::VEG_UI,
+                    textures.mrmotext.clone(),
+                ))
+                .insert(EditorUI);
+        }
+        commands
+            .spawn(TextModeSpriteSheetBundle {
+                sprite: TextModeTextureAtlasSprite {
+                    fg: Colors::Beige.get(),
+                    bg: Colors::Beige.get(),
+                    index: 0,
+                    anchor: Anchor::BottomLeft,
+                    ..Default::default()
+                },
+                texture_atlas: textures.mrmotext.clone(),
+                transform: Transform {
+                    translation: Vec3::new(WIDTH - 104., 0., 0.),
+                    scale: Vec3::new(11., 13., 1.),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .insert(EditorUI);
 
         break;
     }

@@ -1,5 +1,8 @@
+use bevy::asset::Handle;
 use bevy::math::{Vec2, Vec3};
-use bevy::prelude::Color;
+use bevy::prelude::{Color, TextureAtlas, Transform};
+use bevy::sprite::Anchor;
+use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
 
 pub enum Colors {
     // PICO-8 palette
@@ -50,4 +53,27 @@ pub fn collides(
 ) -> bool {
     (collider.x + width / 2. - cursor_pos.x / 2.).abs() < width / 2.
         && (collider.y + height / 2. - cursor_pos.y / 2.).abs() < height / 2.
+}
+
+pub fn text_mode_bundle(
+    bg: Colors,
+    fg: Colors,
+    index: usize,
+    x: f32,
+    y: f32,
+    z: f32,
+    handle: Handle<TextureAtlas>,
+) -> TextModeSpriteSheetBundle {
+    TextModeSpriteSheetBundle {
+        sprite: TextModeTextureAtlasSprite {
+            bg: bg.get(),
+            fg: fg.get(),
+            index,
+            anchor: Anchor::BottomLeft,
+            ..Default::default()
+        },
+        texture_atlas: handle,
+        transform: Transform::from_xyz(x, y, z),
+        ..Default::default()
+    }
 }
