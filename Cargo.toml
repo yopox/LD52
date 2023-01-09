@@ -19,13 +19,19 @@ bevy_text_mode = { path = "../bevy_text_mode" }
 
 rand = { version = "0.8.5", features = ["alloc"]}
 bevy_pkv = { version = "0.6" }
-arboard = "3.2.0"
 base91 = { version = "0.1.0" }
 strum = { version = "0.24.1", features = ["derive"] }
 
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.27", default-features = false }
 image = { version = "0.24", default-features = false }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+cli-clipboard = "0.4.0"
+futures = "0.3.25"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+web-sys = { version = "0.3.60" }
 
 [build-dependencies]
 embed-resource = "1.4"

@@ -1,5 +1,4 @@
 use std::ops::Add;
-use arboard::Clipboard;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
@@ -87,13 +86,25 @@ fn display_editor(
         let grid_x = (WIDTH - grid_w) / 2.;
         let grid_h = puzzle.size.1 as f32 * 40.;
         let grid_y = (HEIGHT - grid_h) / 2.;
+
+
+        #[cfg(target_arch = "wasm32")]
+            let save =      "- save  -\n  level  ";
+        #[cfg(not(target_arch = "wasm32"))]
+            let save = "save to  \nclipboard";
+
+        #[cfg(target_arch = "wasm32")]
+            let load =      "- load  -\n  level";
+        #[cfg(not(target_arch = "wasm32"))]
+            let load = "load from\nclipboard";
+
         for (x, y, text, bg, fg, button) in [
             (grid_x, grid_y + grid_h + 8., "+", Colors::Green, Colors::Beige, TextButtonId::ExpandShrink(true, true)),
             (grid_x + 12., grid_y + grid_h + 8., "-", Colors::Red, Colors::Beige, TextButtonId::ExpandShrink(false, true)),
             (grid_x + grid_w + 8., grid_y + grid_h - 8., "+", Colors::Green, Colors::Beige, TextButtonId::ExpandShrink(true, false)),
             (grid_x + grid_w + 8., grid_y + grid_h - 20., "-", Colors::Red, Colors::Beige, TextButtonId::ExpandShrink(false, false)),
-            (WIDTH - 96., 62., "save to  \nclipboard", Colors::Beige, Colors::DarkRed, TextButtonId::Export),
-            (WIDTH - 96., 62. - 24., "load from\nclipboard", Colors::Beige, Colors::DarkRed, TextButtonId::Import),
+            (WIDTH - 96., 62., save, Colors::Beige, Colors::DarkRed, TextButtonId::Export),
+            (WIDTH - 96., 62. - 24., load, Colors::Beige, Colors::DarkRed, TextButtonId::Import),
             (WIDTH - 96., 62. - 48., "- leave -", Colors::Beige, Colors::DarkRed, TextButtonId::Exit),
         ] {
             let id = spawn_text(
@@ -363,19 +374,15 @@ fn click_on_button(
             }
             TextButtonId::Export => {
                 if let Some(text) = Encoder::encode_puzzle(&puzzle) {
-                    if let Ok(mut clipboard) = Clipboard::new() {
-                        let _ = clipboard.set_text(text);
-                    }
+                    util::write_clipboard(text);
                 }
             }
 
             TextButtonId::Import => {
-                if let Ok(mut clipboard) = Clipboard::new() {
-                    if let Ok(text) = clipboard.get_text() {
-                        if let Some(decoded) = Decoder::decode_puzzle(text) {
-                            commands.insert_resource(CurrentPuzzle(Some(decoded)));
-                            display_level.send(DisplayLevel);
-                        }
+                if let Some(text) = util::read_clipboard() {
+                    if let Some(decoded) = Decoder::decode_puzzle(text) {
+                        commands.insert_resource(CurrentPuzzle(Some(decoded)));
+                        display_level.send(DisplayLevel);
                     }
                 }
             }

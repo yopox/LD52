@@ -1,4 +1,3 @@
-use arboard::Clipboard;
 use bevy::prelude::*;
 use rand::random;
 use strum::IntoEnumIterator;
@@ -94,9 +93,14 @@ fn setup(
     }
 
     // Buttons
+    #[cfg(target_arch = "wasm32")]
+        let load = "---load------\n-----level---";
+    #[cfg(not(target_arch = "wasm32"))]
+        let load = "--load from--\n--clipboard--";
+
     for (text, x, y, button) in [
         ("---level-----\n------list---".to_string(), WIDTH / 2. - 8. * 5.5, 128. + 16., TextButtonId::Title(0)),
-        ("--load from--\n--clipboard--".to_string(), WIDTH / 2. - 8. * 5.5, 128. - 16., TextButtonId::Title(1)),
+        (load.to_string(), WIDTH / 2. - 8. * 5.5, 128. - 16., TextButtonId::Title(1)),
         ("---level-----\n----editor---".to_string(), WIDTH / 2. - 8. * 5.5, 128. - 48., TextButtonId::Title(2)),
     ] {
         let id = spawn_text(
@@ -129,14 +133,12 @@ fn update(
                     state.set(GameState::Puzzle).unwrap_or_default();
                 },
                 1 => {
-                    if let Ok(mut clipboard) = Clipboard::new() {
-                        if let Ok(text) = clipboard.get_text() {
-                            if let Some(mut decoded) = Decoder::decode_puzzle(text) {
-                                decoded.placed.clear();
-                                commands.insert_resource(CurrentPuzzle(Some(decoded)));
-                                in_editor.0 = false;
-                                state.set(GameState::Puzzle).unwrap_or_default();
-                            }
+                    if let Some(text) = util::read_clipboard() {
+                        if let Some(mut decoded) = Decoder::decode_puzzle(text) {
+                            decoded.placed.clear();
+                            commands.insert_resource(CurrentPuzzle(Some(decoded)));
+                            in_editor.0 = false;
+                            state.set(GameState::Puzzle).unwrap_or_default();
                         }
                     }
                 },
