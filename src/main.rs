@@ -39,6 +39,9 @@ enum GameState {
     Puzzle,
 }
 
+#[derive(Resource)]
+pub struct BlockInput(pub bool);
+
 fn main() {
     App::new()
         .insert_resource(ClearColor(Colors::DarkRed.get()))
@@ -70,6 +73,7 @@ fn main() {
         .add_plugin(EditorPlugin)
         .add_plugin(InventoryPlugin)
         .add_startup_system(init)
+        .insert_resource(BlockInput(false))
         .run();
 }
 

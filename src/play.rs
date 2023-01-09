@@ -1,8 +1,9 @@
 use bevy::prelude::*;
+use bevy_tweening::Animator;
 
-use crate::{GameState, HEIGHT, text, util, WIDTH};
+use crate::{BlockInput, GameState, grid, HEIGHT, text, tween, util, WIDTH};
 use crate::editor::InEditor;
-use crate::grid::{CurrentPuzzle, DisplayLevel};
+use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged};
 use crate::loading::Textures;
 use crate::text::{ButtonClick, TextButtonId};
 use crate::util::Colors;
@@ -15,6 +16,8 @@ impl Plugin for PlayPlugin {
             .add_system_set(SystemSet::on_update(GameState::Puzzle)
                 .with_system(display)
                 .with_system(click_on_button)
+                .with_system(check_finished)
+                .with_system(win_animation)
             )
             .add_system_set(SystemSet::on_exit(GameState::Puzzle).with_system(cleanup));
     }
@@ -95,8 +98,9 @@ fn click_on_button(
     mut clicks: EventReader<ButtonClick>,
     in_editor: Res<InEditor>,
     mut state: ResMut<State<GameState>>,
+    block_input: Res<BlockInput>,
 ) {
-    if in_editor.0 { return; }
+    if in_editor.0 || block_input.0 { return; }
 
     for id in clicks.iter() {
         match id.0 {
@@ -106,6 +110,78 @@ fn click_on_button(
 
             _ => {}
         }
+    }
+}
+
+fn check_finished(
+    mut commands: Commands,
+    mut changed: EventReader<GridChanged>,
+    puzzle: Res<CurrentPuzzle>,
+    in_editor: Res<InEditor>,
+    mut block_input: ResMut<BlockInput>,
+) {
+    if puzzle.0.is_none() || in_editor.0 { return; }
+    let puzzle = puzzle.0.as_ref().unwrap();
+
+    for _ in changed.iter() {
+        if puzzle.veggies.iter().all(|v| puzzle.remaining_veggie(v.0, &in_editor) == 0)
+            && puzzle.is_valid().is_ok() {
+            block_input.0 = true;
+            commands.insert_resource(WinAnimation { n: 0, frame: 0 })
+        }
+    }
+}
+
+#[derive(Resource)]
+struct WinAnimation {
+    n: usize,
+    frame: u8,
+}
+
+fn win_animation(
+    mut commands: Commands,
+    textures: Res<Textures>,
+    mut animation: Option<ResMut<WinAnimation>>,
+    mut state: ResMut<State<GameState>>,
+    mut block_input: ResMut<BlockInput>,
+    puzzle: Res<CurrentPuzzle>,
+) {
+    if animation.is_none() || puzzle.0.is_none() { return; }
+    let mut binding = animation.unwrap();
+    let animation = binding.as_mut();
+    let puzzle = puzzle.0.as_ref().unwrap();
+
+    if animation.frame == 0 && animation.n < puzzle.placed.len() {
+        let veg = puzzle.placed.iter().nth(animation.n).unwrap();
+        let pos = grid::get_tile_pos(*veg.0, puzzle.size);
+        commands
+            .spawn(SpriteBundle {
+                texture: textures.heart.clone(),
+                transform: Transform::from_xyz(pos.x + 8., pos.y + 24., util::z::WIN_HEART),
+                ..Default::default()
+            })
+            .insert(Animator::new(tween::position_out(
+                Vec2::new(pos.x + 8., pos.y + 24.),
+                Vec2::new(pos.x + 8., pos.y + 32.),
+                util::z::WIN_HEART,
+                1200
+            )))
+            .insert(Animator::new(tween::tween_sprite_opacity(1000, false)))
+            .insert(PlayUI);
+    }
+
+    animation.frame += 1;
+
+    if animation.n >= puzzle.placed.len() {
+        if animation.frame > 40 {
+            commands.remove_resource::<WinAnimation>();
+            block_input.0 = false;
+            state.set(GameState::Title).unwrap_or_default();
+            return;
+        }
+    } else if animation.frame == 30 {
+        animation.frame = 0;
+        animation.n += 1;
     }
 }
 

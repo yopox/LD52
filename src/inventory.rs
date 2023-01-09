@@ -6,7 +6,7 @@ use bevy_text_mode::TextModeTextureAtlasSprite;
 use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 
-use crate::{GameState, HEIGHT, util};
+use crate::{BlockInput, GameState, HEIGHT, util};
 use crate::editor::{DraggedTile, InEditor};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridUI, GridVeggie, PreviousPos};
 use crate::loading::Textures;
@@ -134,8 +134,9 @@ fn handle_click(
     textures: Res<Textures>,
     puzzle: Res<CurrentPuzzle>,
     in_editor: Res<InEditor>,
+    block_input: Res<BlockInput>,
 ) {
-    if puzzle.0.is_none() { return; }
+    if puzzle.0.is_none() || block_input.0 { return; }
     let puzzle = puzzle.0.as_ref().unwrap();
 
     if mouse.just_pressed(MouseButton::Left) {

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use bevy::utils::hashbrown::HashMap;
-use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
+
+use crate::{BlockInput, GameState, HEIGHT, puzzle, util, WIDTH};
 use crate::inventory::DraggedVeg;
 use crate::loading::Textures;
 use crate::puzzle::{Puzzle, Tile};
@@ -215,8 +215,9 @@ fn handle_click(
     mut puzzle: ResMut<CurrentPuzzle>,
     mut update_faces: EventWriter<UpdateFaces>,
     mut grid_changed: EventWriter<GridChanged>,
+    block_input: Res<BlockInput>,
 ) {
-    if puzzle.0.is_none() { return; }
+    if puzzle.0.is_none() || block_input.0 { return; }
     let puzzle = puzzle.0.as_mut().unwrap();
 
     if mouse.just_pressed(MouseButton::Left) {
