@@ -41,7 +41,7 @@ fn setup(
          drag them on an empty tile of the grid.\n\n\
          the first veggie is the strawberry:\n\
          it likes being adjacent (diagonals count)\n\
-         to another strawberry."),
+         to some other strawberries."),
         (vec![
              (Veggie::Carrot, 2, 8, Expression::Happy),
              (Veggie::Garlic, 8, 8, Expression::Happy),
@@ -61,7 +61,7 @@ fn setup(
          ],
          "\n\n\n\n\n\
          the carrot likes a clean soil.\n\n\
-         it will become sad when adjacent to water!"),
+         it will become sad when adjacent to a rock!"),
         (vec![
              (Veggie::Carrot, 2, 8, Expression::Sad),
              (Veggie::Garlic, 8, 8, Expression::Sad),
