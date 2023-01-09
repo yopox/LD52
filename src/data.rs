@@ -1,5 +1,6 @@
 use bevy::log::error;
 use bevy::utils::HashMap;
+
 use crate::puzzle;
 use crate::puzzle::{Puzzle, Tile};
 use crate::veggie::Veggie;
@@ -211,5 +212,37 @@ impl Decoder {
 
     fn decode_char(slice: &[bool]) -> char {
         return (Decoder::decode_u5(slice) - 1 + 'a' as u8) as char;
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn read_level() -> Option<String> {
+    match cli_clipboard::get_contents() {
+        Ok(s) => Some(s),
+        Err(_) => None,
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn write_level(s: String) {
+    cli_clipboard::set_contents(s).unwrap_or_default();
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn read_level() -> Option<String> {
+    if let Some(window) = web_sys::window() {
+        let navigator = window.navigator();
+        match window.prompt_with_message("Enter level code:") {
+            Ok(Some(text)) => return Some(text.to_string()),
+            _ => return None,
+        }
+    }
+    return None;
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn write_level(s: String) {
+    if let Some(window) = web_sys::window() {
+        window.alert_with_message(&format!("Your level code is: {}", s));
     }
 }

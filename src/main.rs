@@ -1,5 +1,18 @@
 // let_(thinking) = rof if(shrink)
 
+use bevy::prelude::*;
+use bevy_text_mode::{TextModePlugin, TextModeTextureAtlasSprite};
+use bevy_tweening::{component_animator_system, TweeningPlugin};
+
+use crate::editor::EditorPlugin;
+use crate::grid::GridPlugin;
+use crate::inventory::InventoryPlugin;
+use crate::loading::LoadingPlugin;
+use crate::text::TextPlugin;
+use crate::title::TitlePlugin;
+use crate::util::Colors;
+use crate::veggie::VeggiePlugin;
+
 mod veggie;
 mod loading;
 mod title;
@@ -11,18 +24,7 @@ mod tween;
 mod text;
 mod editor;
 mod data;
-
-use bevy::prelude::*;
-use bevy_text_mode::{TextModePlugin, TextModeTextureAtlasSprite};
-use bevy_tweening::{component_animator_system, TweeningPlugin};
-use crate::editor::EditorPlugin;
-use crate::grid::GridPlugin;
-use crate::inventory::InventoryPlugin;
-use crate::loading::LoadingPlugin;
-use crate::text::TextPlugin;
-use crate::title::TitlePlugin;
-use crate::util::Colors;
-use crate::veggie::VeggiePlugin;
+mod levels;
 
 // Dimensions in "zoomed" pixels (camera has a 2x factor)
 pub const WIDTH: f32 = 1280. / 2.;

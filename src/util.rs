@@ -1,8 +1,11 @@
 use bevy::asset::Handle;
+use bevy::hierarchy::BuildChildren;
 use bevy::math::{Vec2, Vec3};
-use bevy::prelude::{Color, TextureAtlas, Transform};
+use bevy::prelude::{Color, Commands, ComputedVisibility, Entity, GlobalTransform, Res, TextureAtlas, Transform, Visibility};
 use bevy::sprite::Anchor;
 use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
+
+use crate::loading::Textures;
 
 pub enum Colors {
     // PICO-8 palette
@@ -40,8 +43,9 @@ pub mod z {
     pub const TILE: f32 = 1.;
     pub const TILE_ABOVE: f32 = 1.5;
     pub const VEGGIE: f32 = 2.;
-    pub const VEG_UI: f32 = 3.;
-    pub const COUNT_TEXT: f32 = 3.5;
+    pub const VEG_UI_BG: f32 = 3.;
+    pub const VEG_UI: f32 = 3.2;
+    pub const COUNT_TEXT: f32 = 3.4;
     pub const VEG_DRAG: f32 = 4.;
 
     pub const TITLE_BUTTONS_BG: f32 = 1.;
@@ -59,8 +63,8 @@ pub fn collides(
 }
 
 pub fn text_mode_bundle(
-    bg: Colors,
-    fg: Colors,
+    bg: &Colors,
+    fg: &Colors,
     index: usize,
     x: f32,
     y: f32,
@@ -81,34 +85,48 @@ pub fn text_mode_bundle(
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-pub fn read_level() -> Option<String> {
-    match cli_clipboard::get_contents() {
-        Ok(s) => Some(s),
-        Err(_) => None,
-    }
-}
+pub fn frame<'w, 's, 'a>(
+    commands: &'a mut Commands<'w, 's>,
+    textures: &Res<Textures>,
+    x: f32, y: f32, z: f32,
+    w: usize, h: usize,
+    bg: Colors, fg: Colors,
+) -> Entity {
+    commands
+        .spawn(Transform::from_xyz(x, y, z))
+        .insert(Visibility::default())
+        .insert(GlobalTransform::default())
+        .insert(ComputedVisibility::default())
+        .with_children(|parent| {
+            parent.spawn(TextModeSpriteSheetBundle {
+                sprite: TextModeTextureAtlasSprite {
+                    bg: fg.get(),
+                    fg: bg.get(),
+                    index: 0,
+                    anchor: Anchor::BottomLeft,
+                    ..Default::default()
+                },
+                transform: Transform {
+                    scale: Vec3::new(w as f32, h as f32, 1.),
+                    ..Default::default()
+                },
+                texture_atlas: textures.mrmotext.clone(),
+                ..Default::default()
+            });
 
-#[cfg(not(target_arch = "wasm32"))]
-pub fn write_level(s: String) {
-    cli_clipboard::set_contents(s).unwrap_or_default();
-}
-
-#[cfg(target_arch = "wasm32")]
-pub fn read_level() -> Option<String> {
-    if let Some(window) = web_sys::window() {
-        let navigator = window.navigator();
-        match window.prompt_with_message("Enter level code:") {
-            Ok(Some(text)) => return Some(text.to_string()),
-            _ => return None,
-        }
-    }
-    return None;
-}
-
-#[cfg(target_arch = "wasm32")]
-pub fn write_level(s: String) {
-    if let Some(window) = web_sys::window() {
-        window.alert_with_message(&format!("Your level code is: {}", s));
-    }
+            for (dx, dy, i) in [
+                (0., 0., 7 * 32 + 30),
+                (8. * w as f32 - 8., 0., 7 * 32 + 31),
+                (0., h as f32 * 8. - 8., 6 * 32 + 30),
+                (8. * w as f32 - 8., h as f32 * 8. - 8., 6 * 32 + 31),
+            ] {
+                parent
+                    .spawn(text_mode_bundle(
+                        &bg, &fg, i,
+                        dx, dy, 0.01,
+                        textures.mrmotext.clone()
+                    ));
+            }
+        })
+        .id()
 }

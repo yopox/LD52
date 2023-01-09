@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_text_mode::TextModeTextureAtlasSprite;
 use strum::EnumIter;
+
 use crate::loading::Textures;
 use crate::util::{Colors, text_mode_bundle};
 
@@ -137,8 +138,8 @@ pub fn spawn_veggie<'w, 's, 'a>(
             veggie.faces().iter().for_each(|(x, y)| {
                 parent
                     .spawn(text_mode_bundle(
-                        veggie.face_bg(),
-                        veggie.face_fg(),
+                        &veggie.face_bg(),
+                        &veggie.face_fg(),
                         expression.index(),
                         *x, *y, 0.0000001,
                         textures.faces.clone()

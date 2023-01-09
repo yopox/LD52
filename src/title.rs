@@ -1,17 +1,18 @@
 use std::u8;
+
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
 use rand::random;
 use strum::IntoEnumIterator;
-use crate::{GameState, HEIGHT, util, WIDTH};
+
+use crate::{data, GameState, HEIGHT, util, WIDTH};
 use crate::data::Decoder;
 use crate::editor::InEditor;
 use crate::grid::CurrentPuzzle;
 use crate::loading::Textures;
 use crate::puzzle::Puzzle;
 use crate::text::{ButtonClick, spawn_text, TextButtonId};
-use crate::util::{Colors, text_mode_bundle};
+use crate::util::Colors;
 use crate::veggie::{Expression, spawn_veggie, Veggie};
 
 pub struct TitlePlugin;
@@ -96,39 +97,16 @@ fn setup(
     }
 
     // Buttons frame
-    commands
-        .spawn(TextModeSpriteSheetBundle {
-            sprite: TextModeTextureAtlasSprite {
-                bg: Colors::Beige.get(),
-                fg: Colors::DarkRed.get(),
-                index: 0,
-                anchor: Anchor::BottomLeft,
-                ..Default::default()
-            },
-            transform: Transform {
-                translation: Vec3::new(WIDTH / 2. - 8. * 7.5, 116., util::z::TITLE_BUTTONS_BG),
-                scale: Vec3::new(17., 13., 1.),
-                ..Default::default()
-            },
-            texture_atlas: textures.mrmotext.clone(),
-            ..Default::default()
-        })
-        .insert(TitleUI);
+    let id = util::frame(
+        &mut commands, &textures,
+        WIDTH / 2. - 8. * 7.5, 116., util::z::TITLE_BUTTONS_BG,
+        17, 13,
+        Colors::DarkRed, Colors::Beige
+    );
 
-    for (x, y, i) in [
-        (WIDTH / 2. - 8. * 7.5, 116. + 12. * 8., 6 * 32 + 30),
-        (WIDTH / 2. + 8. * 8.5, 116. + 12. * 8., 6 * 32 + 31),
-        (WIDTH / 2. - 8. * 7.5, 116., 7 * 32 + 30),
-        (WIDTH / 2. + 8. * 8.5, 116., 7 * 32 + 31),
-    ] {
-        commands
-            .spawn(text_mode_bundle(
-                Colors::DarkRed, Colors::Beige, i,
-                x, y, util::z::TITLE_BUTTONS,
-                textures.mrmotext.clone()
-            ))
-            .insert(TitleUI);
-    }
+    commands
+        .entity(id)
+        .insert(TitleUI);
 
     // Buttons
     #[cfg(target_arch = "wasm32")]
@@ -255,7 +233,7 @@ fn update(
                     state.set(GameState::Puzzle).unwrap_or_default();
                 },
                 1 => {
-                    if let Some(text) = util::read_level() {
+                    if let Some(text) = data::read_level() {
                         if let Some(mut decoded) = Decoder::decode_puzzle(text) {
                             decoded.placed.clear();
                             commands.insert_resource(CurrentPuzzle(Some(decoded)));

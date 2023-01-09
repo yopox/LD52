@@ -1,11 +1,13 @@
 use std::ops::Add;
+
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
 use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
-use crate::{GameState, HEIGHT, puzzle, util, WIDTH};
+
+use crate::{data, GameState, HEIGHT, puzzle, util, WIDTH};
 use crate::data::{Decoder, Encoder};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridTile, PreviousPos};
 use crate::loading::Textures;
@@ -59,11 +61,18 @@ fn display_editor(
     for _ in display_event.iter() {
         entities.iter().for_each(|e| commands.entity(e).despawn_recursive());
 
-        // Tiles on the right
+        // Tiles
         let tiles = Tile::iter().collect::<Vec<Tile>>();
+        let h = (HEIGHT - tiles.len() as f32 * 48.) / 2. + 48.;
+        let w = WIDTH - 32. - 48.;
 
-        let h = (HEIGHT - tiles.len() as f32 * 48.) / 2. + 32.;
-        let w = WIDTH - 32. - 40.;
+        let id = util::frame(
+            &mut commands, &textures,
+            w - 16., h - 8., util::z::VEG_UI_BG,
+            9, 14,
+            Colors::DarkRed, Colors::Beige
+        );
+        commands.entity(id).insert(EditorUI);
 
         for (i, tile) in Tile::iter().enumerate() {
             commands
@@ -86,7 +95,6 @@ fn display_editor(
         let grid_x = (WIDTH - grid_w) / 2.;
         let grid_h = puzzle.size.1 as f32 * 40.;
         let grid_y = (HEIGHT - grid_h) / 2.;
-
 
         #[cfg(target_arch = "wasm32")]
             let save =      "- save  -\n  level  ";
@@ -149,8 +157,8 @@ fn display_editor(
         for i in 0..11 {
             commands
                 .spawn(text_mode_bundle(
-                    Colors::DarkRed,
-                    Colors::Beige,
+                    &Colors::DarkRed,
+                    &Colors::Beige,
                     9 * 32 + 25,
                     WIDTH - 104. + 8. * i as f32, 62. + 56., util::z::VEG_UI,
                     textures.mrmotext.clone(),
@@ -375,12 +383,12 @@ fn click_on_button(
             }
             TextButtonId::Export => {
                 if let Some(text) = Encoder::encode_puzzle(&puzzle) {
-                    util::write_level(text);
+                    data::write_level(text);
                 }
             }
 
             TextButtonId::Import => {
-                if let Some(text) = util::read_level() {
+                if let Some(text) = data::read_level() {
                     if let Some(decoded) = Decoder::decode_puzzle(text) {
                         commands.insert_resource(CurrentPuzzle(Some(decoded)));
                         display_level.send(DisplayLevel);

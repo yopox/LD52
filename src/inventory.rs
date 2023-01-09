@@ -1,9 +1,11 @@
 use std::ops::Add;
+
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_text_mode::TextModeTextureAtlasSprite;
 use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
+
 use crate::{GameState, HEIGHT, util};
 use crate::editor::{DraggedTile, InEditor};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridUI, GridVeggie, PreviousPos};
@@ -53,12 +55,12 @@ fn display(
             };
 
             let h = (HEIGHT - all_veggies.len() as f32 * 48.) / 2.;
-            let w = 32.;
+            let w = 24.;
             for (i, (veg, count)) in all_veggies.iter().enumerate() {
                 let veg_e = spawn_veggie(
                     &mut commands,
                     &textures,
-                    Vec3::new(w, h + 48. * i as f32 + 4., util::z::VEG_UI),
+                    Vec3::new(w + if in_editor.0 { 16. } else { 0. }, h + 48. * i as f32 + 4., util::z::VEG_UI),
                     veg,
                     Expression::Neutral,
                 );
@@ -73,8 +75,8 @@ fn display(
                         &textures,
                         Vec3::new(w + 40., h + 48. * i as f32 + 8., util::z::COUNT_TEXT),
                         &format!("x{:0>2}", count),
-                        Colors::DarkRed.get(),
                         Colors::Beige.get(),
+                        Colors::DarkRed.get(),
                     );
 
                     commands
@@ -83,7 +85,19 @@ fn display(
                         .insert(InventoryCount(veg.clone()));
                 }
             }
+
+            // Veggies frame
+            let id = util::frame(
+                &mut commands, &textures,
+                w - 8., h, util::z::VEG_UI_BG,
+                11, all_veggies.len() * 6,
+                Colors::DarkRed, Colors::Beige
+            );
+
+            commands.entity(id).insert(InventoryUI);
         }
+
+        // qVSz1w5Yl_+k*B
     }
 }
 
