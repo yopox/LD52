@@ -5,6 +5,7 @@ use bevy_pkv::PkvStore;
 use bevy_text_mode::{TextModePlugin, TextModeTextureAtlasSprite};
 use bevy_tweening::{component_animator_system, TweeningPlugin};
 
+use crate::audio::InternalAudioPlugin;
 use crate::editor::EditorPlugin;
 use crate::grid::GridPlugin;
 use crate::inventory::InventoryPlugin;
@@ -33,6 +34,7 @@ mod play;
 mod tutorial;
 mod progress;
 mod overworld;
+mod audio;
 
 // Dimensions in "zoomed" pixels (camera has a 2x factor)
 pub const WIDTH: f32 = 1280. / 2.;
@@ -73,6 +75,7 @@ fn main() {
         .add_plugin(TweeningPlugin)
         .add_system(component_animator_system::<TextureAtlasSprite>)
         .add_system(component_animator_system::<TextModeTextureAtlasSprite>)
+        .add_plugin(InternalAudioPlugin)
         .add_plugin(VeggiePlugin)
         .add_plugin(TextPlugin)
         .add_plugin(LoadingPlugin)

@@ -8,6 +8,7 @@ use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 
 use crate::{data, GameState, HEIGHT, puzzle, util, WIDTH};
+use crate::audio::{BGM, PlayBgmEvent, PlaySfxEvent, SFX};
 use crate::data::{Decoder, Encoder};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridTile, PreviousPos};
 use crate::loading::Textures;
@@ -20,6 +21,9 @@ pub struct EditorPlugin;
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
         app
+            .add_system_set(SystemSet::on_enter(GameState::Editor)
+                .with_system(play_music)
+            )
             .add_system_set(SystemSet::on_update(GameState::Editor)
                 .with_system(display_editor)
                 .with_system(handle_click)
@@ -40,6 +44,12 @@ struct EditorTile(Tile);
 
 #[derive(Component)]
 struct AuthorName;
+
+fn play_music(
+   mut bgm: EventWriter<PlayBgmEvent>,
+) {
+    bgm.send(PlayBgmEvent(BGM::Editor));
+}
 
 fn display_editor(
     mut commands: Commands,
@@ -191,6 +201,7 @@ fn handle_click(
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
     textures: Res<Textures>,
+    mut sfx: EventWriter<PlaySfxEvent>,
 ) {
     if mouse.just_pressed(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
@@ -199,6 +210,7 @@ fn handle_click(
                 (t.translation.x + 20. - pos.x / 2.).abs() < 20.
                     && (t.translation.y + 20. - pos.y / 2.).abs() < 20.
             ).nth(0) {
+                sfx.send(PlaySfxEvent(SFX::Clic));
 
                 // Spawn a tile
                 let tile_e = commands
@@ -230,6 +242,7 @@ fn handle_drop(
     query: Query<(Entity, &DraggedTile, &Transform, Option<&PreviousPos>)>,
     mut puzzle: ResMut<CurrentPuzzle>,
     mut grid_changed: EventWriter<GridChanged>,
+    mut sfx: EventWriter<PlaySfxEvent>,
 ) {
     if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_mut().unwrap();
@@ -252,6 +265,8 @@ fn handle_drop(
                         None
                     };
                     if destination.is_some() {
+                        sfx.send(PlaySfxEvent(SFX::Place));
+
                         let tile = destination.unwrap();
                         puzzle.tiles.insert(tile, dragged.0.clone());
 
@@ -330,6 +345,7 @@ fn click_on_button(
     mut current_puzzle: ResMut<CurrentPuzzle>,
     mut display_level: EventWriter<DisplayLevel>,
     mut state: ResMut<State<GameState>>,
+    mut sfx: EventWriter<PlaySfxEvent>,
 ) {
     if current_puzzle.0.is_none() { return; }
     let mut puzzle = current_puzzle.0.as_mut().unwrap();
@@ -368,6 +384,8 @@ fn click_on_button(
             TextButtonId::Export => {
                 if let Some(text) = Encoder::encode_puzzle(&puzzle) {
                     data::write_level(text);
+                } else {
+                    sfx.send(PlaySfxEvent(SFX::Error));
                 }
             }
 

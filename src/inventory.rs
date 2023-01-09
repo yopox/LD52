@@ -7,6 +7,7 @@ use bevy_tweening::Animator;
 use strum::IntoEnumIterator;
 
 use crate::{BlockInput, GameState, HEIGHT, util};
+use crate::audio::{PlaySfxEvent, SFX};
 use crate::editor::DraggedTile;
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged, GridUI, GridVeggie, PreviousPos};
 use crate::loading::Textures;
@@ -140,6 +141,7 @@ fn handle_click(
     puzzle: Res<CurrentPuzzle>,
     state: Res<State<GameState>>,
     block_input: Res<BlockInput>,
+    mut sfx: EventWriter<PlaySfxEvent>,
 ) {
     let in_editor = state.current() == &GameState::Editor;
     if puzzle.0.is_none() || block_input.0 { return; }
@@ -153,6 +155,8 @@ fn handle_click(
                 && (t.translation.y + 20. - pos.y / 2.).abs() < 20.
             ).nth(0) {
                 if puzzle.remaining_veggie(&v.0, in_editor) == 0 { return; }
+
+                sfx.send(PlaySfxEvent(SFX::Clic));
 
                 // Spawn a veggie
                 let veg_e = spawn_veggie(
@@ -192,6 +196,7 @@ fn handle_drop(
     mut puzzle: ResMut<CurrentPuzzle>,
     mut update_faces: EventWriter<UpdateFaces>,
     mut grid_changed: EventWriter<GridChanged>,
+    mut sfx: EventWriter<PlaySfxEvent>,
 ) {
     if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_mut().unwrap();
@@ -216,6 +221,8 @@ fn handle_drop(
                         None
                     };
                     if destination.is_some() {
+                        sfx.send(PlaySfxEvent(SFX::Place));
+
                         let tile = destination.unwrap();
                         puzzle.placed.insert(tile, v.0.clone());
 

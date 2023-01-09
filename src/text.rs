@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_text_mode::{TextModeSpriteSheetBundle, TextModeTextureAtlasSprite};
 
+use crate::audio::{PlaySfxEvent, SFX};
 use crate::loading::Textures;
 use crate::overworld::Slot;
 use crate::util::{collides, Colors};
@@ -138,6 +139,7 @@ fn handle_click(
     mouse: Res<Input<MouseButton>>,
     windows: Res<Windows>,
     mut ev: EventWriter<ButtonClick>,
+    mut sfx: EventWriter<PlaySfxEvent>,
 ) {
     if mouse.just_pressed(MouseButton::Left) {
         let window = windows.get_primary().unwrap();
@@ -145,6 +147,7 @@ fn handle_click(
             if let Some((_, _, id)) = buttons.iter().filter(|(text, t, _)|
                 collides(t.translation.add(Vec3::new(0., (text.0.len() - 1) as f32 * 8. * -1., 0.)), text.0.get(0).unwrap().len() as f32 * 8., text.0.len() as f32 * 8., pos)
             ).nth(0) {
+                sfx.send(PlaySfxEvent(SFX::Clic));
                 ev.send(ButtonClick(id.clone()));
             }
         }

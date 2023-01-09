@@ -6,6 +6,7 @@ use rand::random;
 use strum::IntoEnumIterator;
 
 use crate::{data, GameState, HEIGHT, util, WIDTH};
+use crate::audio::{BGM, PlayBgmEvent};
 use crate::data::Decoder;
 use crate::grid::CurrentPuzzle;
 use crate::loading::Textures;
@@ -69,7 +70,10 @@ fn get_combination(n: u8) -> Vec<(Veggie, f32, f32, Expression)> {
 fn setup(
     mut commands: Commands,
     textures: Res<Textures>,
+    mut bgm: EventWriter<PlayBgmEvent>,
 ) {
+    bgm.send(PlayBgmEvent(BGM::Title));
+
     // Title
     commands
         .spawn(SpriteBundle {

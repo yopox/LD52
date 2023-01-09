@@ -3,6 +3,7 @@ use bevy_pkv::PkvStore;
 use bevy_tweening::Animator;
 
 use crate::{BlockInput, GameState, grid, HEIGHT, text, tween, util, WIDTH};
+use crate::audio::{BGM, PlayBgmEvent, PlaySfxEvent, SFX};
 use crate::grid::{CurrentPuzzle, DisplayLevel, GridChanged};
 use crate::loading::Textures;
 use crate::overworld::{CurrentSlot, Slot};
@@ -15,6 +16,9 @@ pub struct PlayPlugin;
 impl Plugin for PlayPlugin {
     fn build(&self, app: &mut App) {
         app
+            .add_system_set(SystemSet::on_enter(GameState::Play)
+                .with_system(play_music)
+            )
             .add_system_set(SystemSet::on_update(GameState::Play)
                 .with_system(display)
                 .with_system(click_on_button)
@@ -27,6 +31,12 @@ impl Plugin for PlayPlugin {
 
 #[derive(Component)]
 struct PlayUI;
+
+fn play_music(
+    mut bgm: EventWriter<PlayBgmEvent>,
+) {
+    bgm.send(PlayBgmEvent(BGM::Level));
+}
 
 fn display(
     mut commands: Commands,
@@ -120,6 +130,7 @@ fn check_finished(
     mut block_input: ResMut<BlockInput>,
     slot: Option<Res<CurrentSlot>>,
     mut pkv: ResMut<PkvStore>,
+    mut sfx: EventWriter<PlaySfxEvent>,
 ) {
     if puzzle.0.is_none() { return; }
     let puzzle = puzzle.0.as_ref().unwrap();
@@ -129,6 +140,8 @@ fn check_finished(
             && puzzle.is_valid().is_ok() {
             block_input.0 = true;
             commands.insert_resource(WinAnimation { n: 0, frame: 0 });
+
+            sfx.send(PlaySfxEvent(SFX::Win));
 
             if let Some(s) = &slot {
                 let mut progress = get_progress(pkv.as_ref());

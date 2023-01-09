@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
+use bevy_kira_audio::AudioSource;
 
 use crate::GameState;
 
@@ -9,21 +10,30 @@ impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
         app.add_loading_state(
             LoadingState::new(GameState::Loading)
-                // .with_collection::<Fonts>()
-                // .with_collection::<Sounds>()
+                .with_collection::<AudioAssets>()
                 .with_collection::<Textures>()
-                // .with_collection::<Data>()
                 .continue_to_state(GameState::Title),
         );
     }
 }
 
 #[derive(AssetCollection, Resource)]
-pub struct Fonts {
-}
+pub struct AudioAssets {
+    #[asset(path = "BGM + SFX/BGM - 1 - title.ogg")]
+    pub title: Handle<AudioSource>,
+    #[asset(path = "BGM + SFX/BGM - 2 - main theme.ogg")]
+    pub level: Handle<AudioSource>,
+    #[asset(path = "BGM + SFX/BGM - 3 - editor.ogg")]
+    pub editor: Handle<AudioSource>,
 
-#[derive(AssetCollection, Resource)]
-pub struct Sounds {
+    #[asset(path = "BGM + SFX/clic.ogg")]
+    pub clic: Handle<AudioSource>,
+    #[asset(path = "BGM + SFX/error.ogg")]
+    pub error: Handle<AudioSource>,
+    #[asset(path = "BGM + SFX/place.ogg")]
+    pub place: Handle<AudioSource>,
+    #[asset(path = "BGM + SFX/sfx.ogg")]
+    pub win: Handle<AudioSource>,
 }
 
 #[derive(AssetCollection, Resource)]
@@ -53,8 +63,4 @@ pub struct Textures {
 
     #[asset(path = "heart.png")]
     pub heart: Handle<Image>,
-}
-
-#[derive(AssetCollection, Resource)]
-pub struct Data {
 }

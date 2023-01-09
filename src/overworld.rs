@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_pkv::PkvStore;
 
 use crate::{GameState, levels, text, util, WIDTH};
+use crate::audio::{BGM, PlayBgmEvent};
 use crate::data::Decoder;
 use crate::grid::CurrentPuzzle;
 use crate::loading::Textures;
@@ -53,7 +54,10 @@ fn setup(
     mut commands: Commands,
     textures: Res<Textures>,
     pkv: Res<PkvStore>,
+    mut bgm: EventWriter<PlayBgmEvent>,
 ) {
+    bgm.send(PlayBgmEvent(BGM::Title));
+
     let progress = get_progress(pkv.as_ref());
 
     let id = util::frame(
