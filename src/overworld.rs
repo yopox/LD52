@@ -58,7 +58,7 @@ fn setup(
 
     let id = util::frame(
         &mut commands, &textures,
-        32., 256. + 48., util::z::VEG_UI_BG,
+        32. + 64., 256. + 48. - 32., util::z::VEG_UI_BG,
         8, 3,
         Colors::DarkRed, Colors::Beige,
     );
@@ -66,7 +66,7 @@ fn setup(
 
     let id = text::spawn_text(
         &mut commands, &textures,
-        Vec3::new(40., 264. + 48., util::z::VEG_UI),
+        Vec3::new(40. + 64., 264. + 48. - 32., util::z::VEG_UI),
         "levels",
         Colors::Beige, Colors::DarkRed,
     );
@@ -74,14 +74,14 @@ fn setup(
 
     let id = util::frame(
         &mut commands, &textures,
-        64., 256. - 80., util::z::VEG_UI_BG,
+        176. + 8., 256. - 128., util::z::VEG_UI_BG,
         34, 14,
         Colors::DarkRed, Colors::Beige,
     );
     commands.entity(id).insert(OverworldUI);
 
-    let mut tile_x = 10;
-    let mut tile_y = 32;
+    let mut tile_x = 25;
+    let mut tile_y = 26;
     for (slot, arrow) in [
         (Slot::Tutorial(0), 3),
         (Slot::Level(0), 3),
@@ -103,7 +103,7 @@ fn setup(
         (Slot::Level(10), 3),
         (Slot::Level(11), 3),
         (Slot::Level(12), 3),
-        (Slot::Level(13), 3),
+        (Slot::Level(13), 5),
     ] {
         let completed = match slot {
             Slot::Level(n) => progress.finished_levels.contains(&n),
@@ -147,7 +147,7 @@ fn setup(
 
     let id = util::frame(
         &mut commands, &textures,
-        WIDTH - 120., 24., util::z::VEG_UI_BG,
+        WIDTH - 120. - 32., 24. + 32., util::z::VEG_UI_BG,
         11, 3,
         Colors::DarkRed, Colors::Beige
     );
@@ -155,7 +155,7 @@ fn setup(
 
     let id = text::spawn_text(
         &mut commands, &textures,
-        Vec3::new(WIDTH - 112., 40., util::z::VEG_UI),
+        Vec3::new(WIDTH - 112. - 32., 40. + 32., util::z::VEG_UI),
         &"         \n- leave -\n         ",
         Colors::Beige, Colors::DarkRed,
     );
