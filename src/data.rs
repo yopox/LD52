@@ -116,6 +116,9 @@ pub struct Decoder;
 
 impl Decoder {
     pub fn decode_puzzle(str: String) -> Option<Puzzle> {
+        let mut str = str.replace("“", "\"");
+        if let Some(s) = str.strip_prefix("```") { str = s.to_string(); }
+        if let Some(s) = str.strip_suffix("```") { str = s.to_string(); }
         let decoded = base91::slice_decode(str.as_bytes());
 
         let mut bits = decoded.iter().flat_map(|n| Decoder::u8_to_slice(*n)).collect::<Vec<bool>>();
@@ -225,7 +228,7 @@ pub fn read_level() -> Option<String> {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn write_level(s: String) {
-    cli_clipboard::set_contents(s).unwrap_or_default();
+    cli_clipboard::set_contents(format!("```{s}```")).unwrap_or_default();
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -243,6 +246,6 @@ pub fn read_level() -> Option<String> {
 #[cfg(target_arch = "wasm32")]
 pub fn write_level(s: String) {
     if let Some(window) = web_sys::window() {
-        window.alert_with_message(&format!("Your level code is: {}", s));
+        window.alert_with_message(&format!("Your level code is: ```{}```", s));
     }
 }
